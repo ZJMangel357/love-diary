@@ -48,13 +48,9 @@
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json",
-  "lazyCodeLoading": "requiredComponents",
   "permission": {
     "scope.userLocation": {
       "desc": "用于记录你们的美好时光地点"
-    },
-    "scope.camera": {
-      "desc": "用于拍照记录美好瞬间"
     }
   }
 }

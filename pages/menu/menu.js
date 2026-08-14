@@ -90,7 +90,13 @@ Page({
         list.sort((a, b) => (a.difficulty || 1) - (b.difficulty || 1))
         break
     }
-    
+
+    // 预计算难度星级（WXML 不支持 .repeat()）
+    list = list.map(m => ({
+      ...m,
+      difficultyStars: '⭐'.repeat(m.difficulty || 1) + '☆'.repeat(Math.max(0, 3 - (m.difficulty || 1)))
+    }))
+
     this.setData({ filteredMenus: list })
   },
 

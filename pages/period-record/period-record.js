@@ -34,9 +34,29 @@ Page({
     this.setData({
       todayStr: today,
       startDate: today,
-      records: [...periods.records].sort((a, b) =>
-        new Date(b.startDate.replace(/-/g, '/')) - new Date(a.startDate.replace(/-/g, '/'))
-      )
+      records: this.formatRecords(periods.records)
+    })
+  },
+
+  // 格式化记录数据（WXML 不支持复杂 JS 表达式，需预计算）
+  formatRecords(records) {
+    const symptomMap = {}
+    this.data.commonSymptoms.forEach(s => { symptomMap[s.key] = s.label })
+    const flowMap = {}
+    this.data.flowLevels.forEach(f => { flowMap[f.level] = f })
+    return [...records].sort((a, b) =>
+      new Date(b.startDate.replace(/-/g, '/')) - new Date(a.startDate.replace(/-/g, '/'))
+    ).map(r => {
+      const parts = r.startDate.split('-')
+      const flow = flowMap[r.flowLevel] || {}
+      return {
+        ...r,
+        dateDay: parts[2],
+        dateYM: parts[0] + '.' + parts[1],
+        flowEmoji: flow.emoji || '',
+        flowLabel: flow.label || '',
+        symptomLabels: (r.symptoms || []).map(sk => symptomMap[sk] || sk)
+      }
     })
   },
 
@@ -88,9 +108,7 @@ Page({
     wx.setStorageSync('periods', periods)
     wx.showToast({ title: '记录成功 🌸', icon: 'success' })
     this.setData({
-      records: [...periods.records].sort((a, b) =>
-        new Date(b.startDate.replace(/-/g, '/')) - new Date(a.startDate.replace(/-/g, '/'))
-      ),
+      records: this.formatRecords(periods.records),
       note: '',
       selectedSymptoms: [],
       flowLevel: 2
@@ -110,9 +128,7 @@ Page({
           wx.setStorageSync('periods', periods)
           wx.showToast({ title: '已删除', icon: 'success' })
           this.setData({
-            records: [...periods.records].sort((a, b) =>
-              new Date(b.startDate.replace(/-/g, '/')) - new Date(a.startDate.replace(/-/g, '/'))
-            )
+            records: this.formatRecords(periods.records)
           })
         }
       }

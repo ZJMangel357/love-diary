@@ -52,7 +52,7 @@
           <view class="dish-emoji-wrap">
             <text class="dish-emoji">🍽️</text>
           </view>
-          <view class="dish-difficulty">{{'⭐'.repeat(item.difficulty)}}{{'☆'.repeat(3 - item.difficulty)}}</view>
+          <view class="dish-difficulty">{{item.difficultyStars}}</view>
         </view>
         
         <view class="dish-body">

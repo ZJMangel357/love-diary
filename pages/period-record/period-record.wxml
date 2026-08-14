@@ -52,16 +52,16 @@
     <view wx:if="{{records.length > 0}}">
       <view class="rec-card" wx:for="{{records}}" wx:key="id">
         <view class="rec-date">
-          <text class="rd-day">{{item.startDate.split('-')[2]}}</text>
-          <text class="rd-ym">{{item.startDate.split('-')[0]}}.{{item.startDate.split('-')[1]}}</text>
+          <text class="rd-day">{{item.dateDay}}</text>
+          <text class="rd-ym">{{item.dateYM}}</text>
         </view>
         <view class="rec-body">
           <view class="rec-flags">
             <text class="flow-tag">
-              {{flowLevels[item.flowLevel - 1].emoji}} {{flowLevels[item.flowLevel - 1].label}}
+              {{item.flowEmoji}} {{item.flowLabel}}
             </text>
-            <text class="symp-tag" wx:for="{{item.symptoms}}" wx:for-item="sk" wx:key="*this">
-              #{{commonSymptoms[commonSymptoms.findIndex(x => x.key === sk)].label}}
+            <text class="symp-tag" wx:for="{{item.symptomLabels}}" wx:for-item="sl" wx:key="*this">
+              #{{sl}}
             </text>
           </view>
           <view class="rec-note" wx:if="{{item.note}}">{{item.note}}</view>
