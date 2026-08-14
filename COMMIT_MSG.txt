@@ -1,5 +1,12 @@
-refactor: 移除云开发，改为纯本地存储模式
+feat: 新增 Node.js+Express+MySQL 后端服务
 
-- app.js 删除 wx.cloud.init 相关代码
-- 删除 cloudfunctions 目录（login/syncData 云函数）
-- 所有数据使用 wx.setStorageSync 本地存储
+后端:
+- Express 服务框架，端口 3000
+- MySQL 数据库，7张表（users/couples/menus/anniversaries/period_config/period_records/moments）
+- JWT 认证中间件
+- API 路由：auth(登录/配对)、menus(CRUD)、anniversaries(CRUD)、period(记录/配置)、moments(CRUD)
+- 一键建库脚本 npm run init-db
+
+小程序:
+- 新增 utils/api.js 封装后端请求
+- login.js 对接后端 API 实现登录配对
