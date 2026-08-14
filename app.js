@@ -1,20 +1,7 @@
 // app.js
 App({
   onLaunch() {
-    // 初始化云开发（仅在配置了真实环境ID时启用）
-    if (wx.cloud) {
-      try {
-        const cloudEnv = 'your-env-id' // 上线时替换为你的云开发环境ID
-        if (cloudEnv && cloudEnv !== 'your-env-id') {
-          wx.cloud.init({
-            env: cloudEnv,
-            traceUser: true
-          })
-        }
-      } catch (e) {
-        console.warn('云开发未启用，使用本地存储模式')
-      }
-    }
+    // 纯本地存储模式，不使用云开发
 
     // 读取本地存储
     const userInfo = wx.getStorageSync('userInfo')
