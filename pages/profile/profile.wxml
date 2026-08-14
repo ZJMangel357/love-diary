@@ -30,6 +30,16 @@
       </view>
       <view class="cbc-edit-tip">点击编辑昵称 ✏️</view>
     </view>
+
+    <!-- 未配对提示 -->
+    <view class="pairing-alert" wx:if="{{!isPartnered}}">
+      <text class="pa-emoji">💌</text>
+      <view class="pa-text">
+        <text class="pa-title">等待 TA 加入</text>
+        <text class="pa-desc">分享小程序给对方即可配对</text>
+      </view>
+      <button class="pa-btn" open-type="share" hover-class="none">邀请</button>
+    </view>
   </view>
 
   <view class="container container-padding-bottom" style="margin-top: -60rpx;">
@@ -129,6 +139,15 @@
         <view class="si-content">
           <text class="si-title" style="color: #FF6B9D;">重置所有数据</text>
           <text class="si-subtitle">清除全部内容，恢复默认示例</text>
+        </view>
+        <text class="si-arrow">›</text>
+      </view>
+
+      <view class="setting-item" bindtap="logout">
+        <view class="si-icon list-icon-purple">🚪</view>
+        <view class="si-content">
+          <text class="si-title">退出登录</text>
+          <text class="si-subtitle">{{userInfo.nickName || '未登录'}}</text>
         </view>
         <text class="si-arrow">›</text>
       </view>

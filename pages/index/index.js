@@ -33,10 +33,11 @@ Page({
       statusBarHeight: sysInfo.statusBarHeight || 20,
       todayStr: `${month}月${day}日 星期${weekDay}`
     })
-    this.refreshData()
   },
 
   onShow() {
+    // 检查登录状态
+    if (!app.checkLogin()) return
     this.refreshData()
   },
 
@@ -46,7 +47,14 @@ Page({
   },
 
   refreshData() {
-    const coupleInfo = wx.getStorageSync('coupleInfo') || app.globalData.coupleInfo
+    const userInfo = wx.getStorageSync('userInfo') || {}
+    const coupleInfo = wx.getStorageSync('coupleInfo') || {}
+    // 兼容未配对情况：用登录昵称填充
+    if (!coupleInfo.partnerName1 && userInfo.nickName) {
+      coupleInfo.partnerName1 = userInfo.nickName
+    }
+    if (!coupleInfo.partnerName1) coupleInfo.partnerName1 = '他'
+    if (!coupleInfo.partnerName2) coupleInfo.partnerName2 = '她'
     const menus = wx.getStorageSync('menus') || []
     const anniversaries = wx.getStorageSync('anniversaries') || []
     const moments = wx.getStorageSync('moments') || []

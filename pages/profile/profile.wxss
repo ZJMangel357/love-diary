@@ -281,3 +281,53 @@
   font-size: 24rpx;
   color: #C4A5A5;
 }
+
+/* 未配对提示 */
+.pairing-alert {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24rpx;
+  padding: 20rpx 24rpx;
+  margin-top: 20rpx;
+  gap: 16rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 157, 0.1);
+}
+
+.pa-emoji {
+  font-size: 44rpx;
+  flex-shrink: 0;
+}
+
+.pa-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.pa-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #4A4A4A;
+}
+
+.pa-desc {
+  font-size: 24rpx;
+  color: #B8A5A5;
+}
+
+.pa-btn {
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF8FB3 100%);
+  color: #FFFFFF;
+  font-size: 26rpx;
+  font-weight: 600;
+  padding: 12rpx 32rpx;
+  border-radius: 32rpx;
+  border: none;
+  line-height: normal;
+  flex-shrink: 0;
+}
+
+.pa-btn::after {
+  border: none;
+}

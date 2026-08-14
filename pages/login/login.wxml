@@ -1,0 +1,102 @@
+<!--pages/login/login.wxml-->
+<view class="login-page">
+  <!-- 装饰背景 -->
+  <view class="deco-blob blob-pink"></view>
+  <view class="deco-blob blob-mint"></view>
+  <view class="deco-blob blob-yellow"></view>
+  <view class="floating-heart fh1">💕</view>
+  <view class="floating-heart fh2">💖</view>
+  <view class="floating-heart fh3">💗</view>
+
+  <!-- 状态栏占位 -->
+  <view style="height: {{statusBarHeight}}px;"></view>
+
+  <!-- ========== 阶段1: 输入昵称（首次登录） ========== -->
+  <view class="login-main" wx:if="{{step === 'input'}}">
+    <view class="logo-wrap animate-bounce-in">
+      <view class="logo-emoji">💝</view>
+      <view class="logo-title">甜蜜日记</view>
+      <view class="logo-subtitle">记录爱的每一刻</view>
+    </view>
+
+    <view class="form-card animate-slide-up">
+      <view class="form-label">你的昵称</view>
+      <view class="form-input-wrap">
+        <input class="form-input" placeholder="给自己起个昵称吧~" maxlength="12"
+               value="{{nickName}}" bindinput="onNameInput" />
+        <view class="form-avatar">{{nickName ? nickName[0] : '?'}}</view>
+      </view>
+
+      <view class="form-label">恋爱起始日（选填）</view>
+      <picker mode="date" value="{{loveDate}}" end="{{todayStr}}" bindchange="onDateChange">
+        <view class="form-date-picker">
+          <text>{{loveDate || '选择你们在一起的日子'}}</text>
+          <text class="arrow">›</text>
+        </view>
+      </picker>
+
+      <view class="btn btn-primary btn-block" bindtap="handleLogin">
+        {{inviteCode ? '接受配对' : '开始配对'}}
+      </view>
+    </view>
+
+    <!-- 被邀请时的提示 -->
+    <view class="invite-hint animate-fade-in" wx:if="{{inviteCode && inviterName}}">
+      <text class="hint-emoji">💌</text>
+      <text class="hint-text">{{inviterName}} 邀请你成为情侣</text>
+    </view>
+  </view>
+
+  <!-- ========== 阶段2: 等待配对（已登录，等待对方） ========== -->
+  <view class="login-main" wx:if="{{step === 'waiting'}}">
+    <view class="logo-wrap animate-bounce-in">
+      <view class="logo-emoji">💕</view>
+      <view class="logo-title">等待 TA 加入</view>
+      <view class="logo-subtitle">{{nickName}}，你的配对码已生成</view>
+    </view>
+
+    <view class="pairing-card animate-slide-up">
+      <view class="pairing-code-label">专属配对码</view>
+      <view class="pairing-code">{{pairingCode}}</view>
+      <view class="pairing-code-hint">将小程序分享给 TA，TA 打开后会自动配对</view>
+
+      <button class="btn btn-primary btn-block share-btn" open-type="share">
+        <text class="share-icon">💌</text>
+        <text>分享给 TA</text>
+      </button>
+
+      <view class="copy-btn" bindtap="copyCode">
+        📋 复制配对码
+      </view>
+    </view>
+
+    <view class="waiting-tip">
+      <view class="pulse-dots">
+        <view class="dot"></view>
+        <view class="dot"></view>
+        <view class="dot"></view>
+      </view>
+      <text class="waiting-text">静静等待 TA 的到来...</text>
+    </view>
+  </view>
+
+  <!-- ========== 阶段3: 配对成功 ========== -->
+  <view class="login-main" wx:if="{{step === 'success'}}">
+    <view class="success-wrap animate-bounce-in">
+      <view class="success-emoji">🎉</view>
+      <view class="success-title">配对成功！</view>
+      <view class="couple-show">
+        <view class="cs-avatar cs-left">{{nickName[0]}}</view>
+        <view class="cs-heart animate-pulse">💕</view>
+        <view class="cs-avatar cs-right">{{partnerName[0]}}</view>
+      </view>
+      <view class="couple-names-show">
+        {{nickName}} & {{partnerName}}
+      </view>
+      <view class="success-desc">从现在起，你们可以一起记录甜蜜时光了</view>
+      <view class="btn btn-primary btn-block" bindtap="goHome" style="margin-top: 48rpx;">
+        进入甜蜜日记 🏠
+      </view>
+    </view>
+  </view>
+</view>

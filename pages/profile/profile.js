@@ -30,10 +30,10 @@ Page({
   },
 
   refreshData() {
-    const coupleInfo = wx.getStorageSync('coupleInfo') || app.globalData.coupleInfo
+    const coupleInfo = wx.getStorageSync('coupleInfo') || {}
     const userInfo = wx.getStorageSync('userInfo') || null
     const themeInfo = wx.getStorageSync('themeInfo')
-    
+
     let currentTheme = 0
     if (themeInfo) {
       const idx = this.data.themeOptions.findIndex(t => t.name === themeInfo.themeName)
@@ -56,7 +56,8 @@ Page({
       userInfo,
       currentTheme,
       dataStats,
-      loveDays
+      loveDays,
+      isPartnered: !!(coupleInfo && coupleInfo.partnered)
     })
   },
 
@@ -223,10 +224,36 @@ Page({
 
   // 分享
   onShareAppMessage() {
+    const userInfo = this.data.userInfo
+    if (userInfo && !this.data.isPartnered) {
+      // 未配对时分享配对链接
+      return {
+        title: userInfo.nickName + ' 邀请你成为情侣 💕 来「甜蜜日记」配对吧~',
+        path: '/pages/login/login?code=' + (userInfo.pairingCode || '') + '&name=' + encodeURIComponent(userInfo.nickName || '')
+      }
+    }
     return {
       title: '💕 甜蜜日记 - 记录我们爱的每一刻',
       path: '/pages/index/index'
     }
+  },
+
+  // 退出登录
+  logout() {
+    wx.showModal({
+      title: '退出登录',
+      content: '退出后需要重新登录和配对，确定吗？',
+      confirmColor: '#FF6B9D',
+      success: (res) => {
+        if (res.confirm) {
+          wx.removeStorageSync('userInfo')
+          wx.removeStorageSync('coupleInfo')
+          app.globalData.userInfo = null
+          app.globalData.coupleInfo = null
+          wx.reLaunch({ url: '/pages/login/login' })
+        }
+      }
+    })
   },
 
   onShareTimeline() {
