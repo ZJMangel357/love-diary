@@ -15,6 +15,12 @@
       <view class="top-title">甜蜜日记</view>
       <view class="top-date">{{todayStr}}</view>
     </view>
+
+    <!-- 单人模式提示条 -->
+    <view class="single-mode-tip" wx:if="{{singleMode}}">
+      <text class="sm-emoji">💫</text>
+      <text class="sm-text">单人体验中，分享配对码给 TA 即可开启双人模式</text>
+    </view>
     
     <!-- 情侣卡片 -->
     <view class="couple-card animate-bounce-in" bindtap="onAvatarTap">

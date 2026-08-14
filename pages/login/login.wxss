@@ -3,7 +3,7 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #FFF5F8 0%, #F0FFF9 50%, #FFFEF0 100%);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
   padding: 0 48rpx;
   box-sizing: border-box;
 }
@@ -261,6 +261,24 @@
 @keyframes dotPulse {
   0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
   40% { opacity: 1; transform: scale(1.2); }
+}
+
+/* 跳过配对按钮 */
+.skip-pairing {
+  display: block;
+  text-align: center;
+  margin: 48rpx auto 32rpx;
+  padding: 24rpx 48rpx;
+  color: #FF6B9D;
+  font-size: 28rpx;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 40rpx;
+  width: fit-content;
+  border: 2rpx dashed #FF6B9D;
+}
+
+.skip-pairing:active {
+  opacity: 0.6;
 }
 
 .waiting-text {

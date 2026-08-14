@@ -1,5 +1,6 @@
 // pages/index/index.js
 const util = require('../../utils/util.js')
+const api = require('../../utils/api.js')
 const app = getApp()
 
 Page({
@@ -13,6 +14,7 @@ Page({
     nearestAnniversaries: [],
     periodInfo: null,
     recentMoments: [],
+    singleMode: false,        // 单人体验模式
     weekDays: ['日', '一', '二', '三', '四', '五', '六'],
     quickActions: [
       { id: 'menu', icon: '🍳', title: '今天吃什么', desc: '随机菜品推荐', color: 'pink', page: '/pages/menu/menu' },
@@ -37,7 +39,11 @@ Page({
 
   onShow() {
     // 检查登录状态
-    if (!app.checkLogin()) return
+    const token = wx.getStorageSync('token')
+    if (!token) {
+      wx.redirectTo({ url: '/pages/login/login' })
+      return
+    }
     this.refreshData()
   },
 
@@ -46,78 +52,110 @@ Page({
     wx.stopPullDownRefresh()
   },
 
-  refreshData() {
-    const userInfo = wx.getStorageSync('userInfo') || {}
-    const coupleInfo = wx.getStorageSync('coupleInfo') || {}
-    // 兼容未配对情况：用登录昵称填充
-    if (!coupleInfo.partnerName1 && userInfo.nickName) {
-      coupleInfo.partnerName1 = userInfo.nickName
-    }
-    if (!coupleInfo.partnerName1) coupleInfo.partnerName1 = '他'
-    if (!coupleInfo.partnerName2) coupleInfo.partnerName2 = '她'
-    const menus = wx.getStorageSync('menus') || []
-    const anniversaries = wx.getStorageSync('anniversaries') || []
-    const moments = wx.getStorageSync('moments') || []
-    const periods = wx.getStorageSync('periods') || { records: [], cycleLength: 28, periodLength: 5 }
+  async refreshData() {
+    try {
+      // 拉取用户信息，检测配对状态
+      const profileRes = await api.auth.profile()
+      if (profileRes.code === 0 && profileRes.data) {
+        const d = profileRes.data
+        wx.setStorageSync('userInfo', d)
 
-    // 计算相爱天数
-    let loveDays = 0
-    if (coupleInfo.loveDate) {
-      loveDays = util.getDaysBetween(coupleInfo.loveDate, util.formatDate(new Date(), 'YYYY-MM-DD'))
-    }
+        // 配对状态变化处理
+        const wasSingle = wx.getStorageSync('singleMode')
+        if (d.partnered && wasSingle) {
+          // 从单人模式变为已配对
+          wx.removeStorageSync('singleMode')
+          wx.showToast({ title: 'TA已加入，开启双人模式 💕', icon: 'none' })
+        }
+        this.setData({ singleMode: !d.partnered })
 
-    // 获取今日菜单
-    let todayMenu = wx.getStorageSync('todayMenu')
-    if (!todayMenu && menus.length > 0) {
-      todayMenu = util.getRandomItem(menus)
-    }
+        // 构建 coupleInfo
+        const coupleInfo = {
+          partnerName1: d.nickName,
+          partnerName2: d.partnerName || 'TA',
+          loveDate: d.loveDate,
+          partnered: d.partnered
+        }
 
-    // 获取最近的纪念日（按距离天数排序）
-    const sortedAnniversaries = anniversaries
-      .map(a => ({
-        ...a,
-        daysTo: util.getDaysToAnniversary(a.date, a.repeat),
-        displayDate: a.repeat === 'yearly' ? util.getAnniversaryThisYear(a.date) : a.date
-      }))
-      .sort((a, b) => a.daysTo - b.daysTo)
-      .slice(0, 3)
+        // 计算相爱天数
+        let loveDays = 0
+        if (coupleInfo.loveDate) {
+          loveDays = util.getDaysBetween(coupleInfo.loveDate, util.formatDate(new Date(), 'YYYY-MM-DD'))
+        }
 
-    // 经期预测
-    let periodInfo = null
-    if (periods.records && periods.records.length > 0) {
-      const lastRecord = periods.records[periods.records.length - 1]
-      const phase = util.periodUtils.getCurrentPhase(
-        lastRecord.startDate,
-        periods.cycleLength,
-        periods.periodLength
-      )
-      const nextStart = util.periodUtils.getNextPeriodStart(
-        lastRecord.startDate,
-        periods.cycleLength
-      )
-      const ovulationDate = util.periodUtils.getOvulationDate(nextStart)
-      periodInfo = {
-        ...phase,
-        nextStart,
-        ovulationDate,
-        daysToNext: util.getDaysBetween(util.formatDate(new Date(), 'YYYY-MM-DD'), nextStart)
+        this.setData({
+          coupleInfo,
+          loveDays,
+          loveQuote: util.getRandomLoveQuote()
+        })
+
+        // 并行加载各模块数据
+        await Promise.all([
+          this.loadMenus(),
+          this.loadAnniversaries(),
+          this.loadMoments()
+        ])
       }
+    } catch (e) {
+      console.error('加载数据失败', e)
+      // 网络错误时使用本地缓存兜底
+      const userInfo = wx.getStorageSync('userInfo') || {}
+      this.setData({
+        coupleInfo: { partnerName1: userInfo.nickName || '我', partnerName2: 'TA' },
+        singleMode: true
+      })
     }
+  },
 
-    // 最近时光记录
-    const recentMoments = moments
-      .sort((a, b) => new Date(b.date.replace(/-/g, '/')) - new Date(a.date.replace(/-/g, '/')))
-      .slice(0, 2)
+  // 加载菜品数据
+  async loadMenus() {
+    try {
+      const res = await api.menu.list()
+      if (res.code === 0) {
+        const menus = res.data || []
+        const todayMenu = menus.find(m => m.is_today) || (menus.length > 0 ? menus[0] : null)
+        this.setData({ todayMenu })
+      }
+    } catch (e) {
+      console.error('加载菜品失败', e)
+    }
+  },
 
-    this.setData({
-      coupleInfo,
-      loveDays,
-      loveQuote: util.getRandomLoveQuote(),
-      todayMenu,
-      nearestAnniversaries: sortedAnniversaries,
-      periodInfo,
-      recentMoments
-    })
+  // 加载纪念日数据
+  async loadAnniversaries() {
+    try {
+      const res = await api.anniversary.list()
+      if (res.code === 0) {
+        const anniversaries = res.data || []
+        const sortedAnniversaries = anniversaries
+          .map(a => ({
+            ...a,
+            daysTo: util.getDaysToAnniversary(a.date, a.repeat_type || a.repeat),
+            displayDate: (a.repeat_type || a.repeat) === 'yearly' ? util.getAnniversaryThisYear(a.date) : a.date
+          }))
+          .sort((a, b) => a.daysTo - b.daysTo)
+          .slice(0, 3)
+        this.setData({ nearestAnniversaries: sortedAnniversaries })
+      }
+    } catch (e) {
+      console.error('加载纪念日失败', e)
+    }
+  },
+
+  // 加载时光记录
+  async loadMoments() {
+    try {
+      const res = await api.moment.list()
+      if (res.code === 0) {
+        const moments = res.data || []
+        const recentMoments = moments
+          .sort((a, b) => new Date(b.date.replace(/-/g, '/')) - new Date(a.date.replace(/-/g, '/')))
+          .slice(0, 2)
+        this.setData({ recentMoments })
+      }
+    } catch (e) {
+      console.error('加载时光记录失败', e)
+    }
   },
 
   // 换一句情话
@@ -128,16 +166,22 @@ Page({
   },
 
   // 随机今日菜品
-  randomMenu() {
-    const menus = wx.getStorageSync('menus') || []
-    if (menus.length === 0) {
-      wx.showToast({ title: '菜单空空如也~', icon: 'none' })
-      return
+  async randomMenu() {
+    try {
+      const res = await api.menu.list()
+      if (res.code !== 0 || !res.data || res.data.length === 0) {
+        wx.showToast({ title: '菜单空空如也~', icon: 'none' })
+        return
+      }
+      const randomMenu = util.getRandomItem(res.data)
+      const setRes = await api.menu.setToday(randomMenu.id)
+      if (setRes.code === 0) {
+        this.setData({ todayMenu: randomMenu })
+        wx.showToast({ title: '今日菜品已更新 🎉', icon: 'none' })
+      }
+    } catch (e) {
+      wx.showToast({ title: '网络错误', icon: 'none' })
     }
-    const randomMenu = util.getRandomItem(menus)
-    wx.setStorageSync('todayMenu', randomMenu)
-    this.setData({ todayMenu: randomMenu })
-    wx.showToast({ title: '今日菜品已更新 🎉', icon: 'none' })
   },
 
   // 跳转功能页

@@ -78,6 +78,10 @@
       </view>
       <text class="waiting-text">静静等待 TA 的到来...</text>
     </view>
+
+    <view class="skip-pairing" bindtap="skipPairing">
+      先一个人体验一下 ›
+    </view>
   </view>
 
   <!-- ========== 阶段3: 配对成功 ========== -->

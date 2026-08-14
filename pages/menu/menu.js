@@ -1,5 +1,6 @@
 // pages/menu/menu.js
 const util = require('../../utils/util.js')
+const api = require('../../utils/api.js')
 const app = getApp()
 
 Page({
@@ -23,22 +24,32 @@ Page({
     this.refreshData()
   },
 
-  refreshData() {
-    const menus = wx.getStorageSync('menus') || []
-    const todayMenu = wx.getStorageSync('todayMenu') || null
-    
-    // 生成分类列表
-    const categorySet = new Set(['全部'])
-    menus.forEach(m => {
-      if (m.category) categorySet.add(m.category)
-    })
-    
-    this.setData({
-      menus,
-      todayMenu,
-      categories: Array.from(categorySet)
-    })
-    this.applyFilter()
+  async refreshData() {
+    try {
+      const res = await api.menu.list()
+      if (res.code !== 0) {
+        wx.showToast({ title: res.message || '加载失败', icon: 'none' })
+        return
+      }
+      const menus = res.data || []
+      // 生成分类列表
+      const categorySet = new Set(['全部'])
+      menus.forEach(m => {
+        if (m.category) categorySet.add(m.category)
+      })
+
+      // 今日菜单：取 is_today 标记的菜品
+      const todayMenu = menus.find(m => m.is_today) || null
+
+      this.setData({
+        menus,
+        todayMenu,
+        categories: Array.from(categorySet)
+      })
+      this.applyFilter()
+    } catch (e) {
+      wx.showToast({ title: '网络错误，请检查后端服务', icon: 'none' })
+    }
   },
 
   // 切换分类
@@ -101,31 +112,40 @@ Page({
   },
 
   // 切换收藏
-  toggleFavorite(e) {
+  async toggleFavorite(e) {
     const { id } = e.currentTarget.dataset
-    const menus = this.data.menus.map(m => {
-      if (m.id === id) {
-        return { ...m, favorite: !m.favorite }
+    const menu = this.data.menus.find(m => m.id === id)
+    if (!menu) return
+    const newFav = !menu.favorite
+    try {
+      const res = await api.menu.update(id, { ...menu, favorite: newFav })
+      if (res.code === 0) {
+        wx.showToast({
+          title: newFav ? '已加入收藏 💖' : '取消收藏',
+          icon: 'none'
+        })
+        this.refreshData()
+      } else {
+        wx.showToast({ title: res.message || '操作失败', icon: 'none' })
       }
-      return m
-    })
-    wx.setStorageSync('menus', menus)
-    const menu = menus.find(m => m.id === id)
-    wx.showToast({
-      title: menu.favorite ? '已加入收藏 💖' : '取消收藏',
-      icon: 'none'
-    })
-    this.refreshData()
+    } catch (e) {
+      wx.showToast({ title: '网络错误', icon: 'none' })
+    }
   },
 
   // 设为今日菜单
-  setAsToday(e) {
+  async setAsToday(e) {
     const { id } = e.currentTarget.dataset
-    const menu = this.data.menus.find(m => m.id === id)
-    if (menu) {
-      wx.setStorageSync('todayMenu', menu)
-      wx.showToast({ title: '已设为今日菜单 🎉', icon: 'none' })
-      this.refreshData()
+    try {
+      const res = await api.menu.setToday(id)
+      if (res.code === 0) {
+        wx.showToast({ title: '已设为今日菜单 🎉', icon: 'none' })
+        this.refreshData()
+      } else {
+        wx.showToast({ title: res.message || '设置失败', icon: 'none' })
+      }
+    } catch (e) {
+      wx.showToast({ title: '网络错误', icon: 'none' })
     }
   },
 
@@ -136,17 +156,19 @@ Page({
       title: '删除菜品',
       content: '确定要删除这道菜吗？',
       confirmColor: '#FF6B9D',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          const menus = this.data.menus.filter(m => m.id !== id)
-          wx.setStorageSync('menus', menus)
-          // 如果今日菜单被删了
-          const todayMenu = wx.getStorageSync('todayMenu')
-          if (todayMenu && todayMenu.id === id) {
-            wx.removeStorageSync('todayMenu')
+          try {
+            const r = await api.menu.remove(id)
+            if (r.code === 0) {
+              wx.showToast({ title: '已删除', icon: 'success' })
+              this.refreshData()
+            } else {
+              wx.showToast({ title: r.message || '删除失败', icon: 'none' })
+            }
+          } catch (e) {
+            wx.showToast({ title: '网络错误', icon: 'none' })
           }
-          wx.showToast({ title: '已删除', icon: 'success' })
-          this.refreshData()
         }
       }
     })
@@ -182,12 +204,20 @@ Page({
     this.setData({ showRandomModal: false })
   },
 
-  confirmRandom() {
+  async confirmRandom() {
     if (this.data.randomResult) {
-      wx.setStorageSync('todayMenu', this.data.randomResult)
-      wx.showToast({ title: '就决定是它啦！🎉', icon: 'none' })
-      this.setData({ showRandomModal: false })
-      this.refreshData()
+      try {
+        const res = await api.menu.setToday(this.data.randomResult.id)
+        if (res.code === 0) {
+          wx.showToast({ title: '就决定是它啦！🎉', icon: 'none' })
+          this.setData({ showRandomModal: false })
+          this.refreshData()
+        } else {
+          wx.showToast({ title: res.message || '设置失败', icon: 'none' })
+        }
+      } catch (e) {
+        wx.showToast({ title: '网络错误', icon: 'none' })
+      }
     }
   },
 

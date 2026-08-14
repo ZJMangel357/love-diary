@@ -13,6 +13,28 @@
   overflow: hidden;
 }
 
+/* 单人模式提示 */
+.single-mode-tip {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin: 16rpx 0 8rpx;
+  padding: 16rpx 24rpx;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 20rpx;
+  backdrop-filter: blur(10px);
+}
+
+.sm-emoji {
+  font-size: 28rpx;
+}
+
+.sm-text {
+  font-size: 24rpx;
+  color: #8B5A8B;
+  flex: 1;
+}
+
 .top-bar {
   display: flex;
   align-items: center;

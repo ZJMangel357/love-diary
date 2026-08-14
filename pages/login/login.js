@@ -22,6 +22,7 @@ Page({
 
     // 检查本地是否已有 token
     const token = wx.getStorageSync('token')
+    const singleMode = wx.getStorageSync('singleMode')
     if (token) {
       // 已有 token，验证并获取用户信息
       api.auth.profile().then(res => {
@@ -29,6 +30,11 @@ Page({
           const d = res.data
           wx.setStorageSync('userInfo', d)
           if (d.partnered) {
+            // 已配对，直接进主页
+            wx.removeStorageSync('singleMode')
+            wx.switchTab({ url: '/pages/index/index' })
+          } else if (singleMode) {
+            // 单人体验模式，直接进主页
             wx.switchTab({ url: '/pages/index/index' })
           } else if (d.pairingCode) {
             this.setData({ step: 'waiting', nickName: d.nickName, pairingCode: d.pairingCode })
@@ -73,7 +79,12 @@ Page({
     try {
       if (this.data.inviteCode) {
         // 被邀请方：接受配对
-        const res = await api.auth.pair(name, this.data.inviteCode, this.data.loveDate)
+        let openId = wx.getStorageSync('openId')
+        if (!openId) {
+          openId = 'local_' + Date.now() + '_' + Math.floor(Math.random() * 1000000)
+          wx.setStorageSync('openId', openId)
+        }
+        const res = await api.auth.pair(name, this.data.inviteCode, this.data.loveDate, openId)
         if (res.code === 0) {
           wx.setStorageSync('token', res.data.token)
           wx.setStorageSync('userInfo', res.data)
@@ -84,7 +95,13 @@ Page({
         }
       } else {
         // 首次登录：生成配对码
-        const res = await api.auth.login(name, this.data.loveDate)
+        // 生成设备唯一标识，避免重复登录创建多个用户
+        let openId = wx.getStorageSync('openId')
+        if (!openId) {
+          openId = 'local_' + Date.now() + '_' + Math.floor(Math.random() * 1000000)
+          wx.setStorageSync('openId', openId)
+        }
+        const res = await api.auth.login(name, this.data.loveDate, openId)
         if (res.code === 0) {
           wx.setStorageSync('token', res.data.token)
           wx.setStorageSync('userInfo', res.data)
@@ -113,6 +130,22 @@ Page({
     wx.setClipboardData({
       data: this.data.pairingCode,
       success: () => wx.showToast({ title: '配对码已复制', icon: 'success' })
+    })
+  },
+
+  // 跳过配对，先单人体验
+  skipPairing() {
+    wx.showModal({
+      title: '单人体验模式',
+      content: '你可以先一个人体验所有功能，等 TA 用配对码加入后，数据会自动同步给对方~',
+      confirmText: '进入体验',
+      confirmColor: '#FF6B9D',
+      success: (res) => {
+        if (res.confirm) {
+          wx.setStorageSync('singleMode', true)
+          wx.switchTab({ url: '/pages/index/index' })
+        }
+      }
     })
   },
 

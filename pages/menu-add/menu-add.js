@@ -1,5 +1,6 @@
 // pages/menu-add/menu-add.js
 const util = require('../../utils/util.js')
+const api = require('../../utils/api.js')
 const app = getApp()
 
 Page({
@@ -19,26 +20,33 @@ Page({
     selectedPreset: []
   },
 
-  onLoad(options) {
+  async onLoad(options) {
     const categories = util.menuCategories
     this.setData({ categories })
     
     if (options.id) {
-      const menus = wx.getStorageSync('menus') || []
-      const menu = menus.find(m => m.id === Number(options.id))
-      if (menu) {
-        this.setData({
-          isEdit: true,
-          editId: menu.id,
-          name: menu.name,
-          category: menu.category || '家常菜',
-          tags: menu.tags || [],
-          selectedPreset: menu.tags || [],
-          difficulty: menu.difficulty || 1,
-          creator: menu.creator || '她',
-          image: menu.image || ''
-        })
-        wx.setNavigationBarTitle({ title: '编辑菜品' })
+      // 编辑模式：从后端拉取菜品详情
+      try {
+        const res = await api.menu.list()
+        if (res.code === 0) {
+          const menu = res.data.find(m => m.id === Number(options.id))
+          if (menu) {
+            this.setData({
+              isEdit: true,
+              editId: menu.id,
+              name: menu.name,
+              category: menu.category || '家常菜',
+              tags: menu.tags || [],
+              selectedPreset: menu.tags || [],
+              difficulty: menu.difficulty || 1,
+              creator: menu.creator || '她',
+              image: menu.image || ''
+            })
+            wx.setNavigationBarTitle({ title: '编辑菜品' })
+          }
+        }
+      } catch (e) {
+        console.error('获取菜品详情失败', e)
       }
     }
   },
@@ -105,13 +113,12 @@ Page({
     this.setData({ creator: this.data.creators[e.detail.value] })
   },
 
-  save() {
+  async save() {
     if (!this.data.name.trim()) {
       wx.showToast({ title: '请输入菜名', icon: 'none' })
       return
     }
 
-    let menus = wx.getStorageSync('menus') || []
     const payload = {
       name: this.data.name.trim(),
       category: this.data.category,
@@ -122,26 +129,29 @@ Page({
       favorite: false
     }
 
-    if (this.data.isEdit) {
-      menus = menus.map(m => {
-        if (m.id === this.data.editId) {
-          return { ...m, ...payload, favorite: m.favorite }
+    try {
+      if (this.data.isEdit) {
+        const res = await api.menu.update(this.data.editId, payload)
+        if (res.code === 0) {
+          wx.showToast({ title: '修改成功 ✅', icon: 'success' })
+        } else {
+          wx.showToast({ title: res.message || '修改失败', icon: 'none' })
+          return
         }
-        return m
-      })
-      wx.showToast({ title: '修改成功 ✅', icon: 'success' })
-    } else {
-      const newMenu = {
-        id: Date.now(),
-        ...payload
+      } else {
+        const res = await api.menu.add(payload)
+        if (res.code === 0) {
+          wx.showToast({ title: '添加成功 🎉', icon: 'success' })
+        } else {
+          wx.showToast({ title: res.message || '添加失败', icon: 'none' })
+          return
+        }
       }
-      menus.unshift(newMenu)
-      wx.showToast({ title: '添加成功 🎉', icon: 'success' })
+      setTimeout(() => {
+        wx.navigateBack()
+      }, 800)
+    } catch (e) {
+      wx.showToast({ title: '网络错误，请检查后端服务', icon: 'none' })
     }
-
-    wx.setStorageSync('menus', menus)
-    setTimeout(() => {
-      wx.navigateBack()
-    }, 800)
   }
 })
