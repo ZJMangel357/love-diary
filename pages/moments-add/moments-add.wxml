@@ -1,0 +1,72 @@
+<!--pages/moments-add/moments-add.wxml-->
+<view class="page">
+  <view class="form-container">
+    <!-- 心情选择 -->
+    <view class="mood-section">
+      <view class="section-label">😋 此刻心情</view>
+      <view class="mood-grid">
+        <view class="mood-item {{mood === item.emoji ? 'active' : ''}}"
+              wx:for="{{moodList}}" wx:key="emoji"
+              data-mood="{{item.emoji}}" bindtap="chooseMood">
+          <text class="mi-emoji">{{item.emoji}}</text>
+          <text class="mi-label">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">✨ 记录标题</view>
+      <input class="form-input" placeholder="给这一刻起个名字吧..." 
+             value="{{title}}" bindinput="onInputTitle" maxlength="30" />
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">📝 记录内容</view>
+      <textarea class="form-textarea" placeholder="写下此刻的感受，让回忆更深刻..."
+                value="{{content}}" bindinput="onInputContent" maxlength="500"
+                auto-height maxlength="-1" />
+      <view class="count-tip">{{content.length}}/500</view>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">📸 添加照片</view>
+      <view class="image-grid">
+        <view class="img-wrap" wx:for="{{images}}" wx:key="*this">
+          <image class="img-item" src="{{item}}" mode="aspectFill" 
+                 data-idx="{{index}}" bindtap="previewImage" />
+          <view class="img-remove" catchtap="removeImage" data-idx="{{index}}">×</view>
+        </view>
+        <view class="img-add" wx:if="{{images.length < 9}}" bindtap="chooseImage">
+          <text class="add-plus">+</text>
+          <text class="add-label">添加照片</text>
+        </view>
+      </view>
+      <view class="sub-hint">最多可添加9张照片</view>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label-row">
+        <view class="section-label" style="margin: 0;">📅 日期</view>
+        <picker mode="date" value="{{date}}" start="2010-01-01" bindchange="changeDate">
+          <view class="mini-picker">{{date}} ›</view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">📍 地点（选填）</view>
+      <view class="loc-row">
+        <input class="form-input loc-input" placeholder="添加地点让记忆更完整~" 
+               value="{{location}}" bindinput="onInputLocation" maxlength="50" />
+        <view class="loc-btn" bindtap="getLocation">
+          <text>📍</text>
+        </view>
+      </view>
+    </view>
+
+    <view style="height: 48rpx;"></view>
+    <view class="btn btn-primary btn-block save-btn" bindtap="save">
+      {{isEdit ? '💾 保存修改' : '💝 保存这份记忆'}}
+    </view>
+  </view>
+</view>

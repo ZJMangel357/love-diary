@@ -1,0 +1,9 @@
+{
+  "name": "syncData",
+  "version": "1.0.0",
+  "description": "同步情侣小程序本地与云端数据",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

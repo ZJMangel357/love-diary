@@ -1,0 +1,91 @@
+<!--pages/anniversary/anniversary.wxml-->
+<view class="page">
+  <!-- 顶部装饰 -->
+  <view class="hero-section hero-purple" style="margin: 0; border-radius: 0 0 48rpx 48rpx;">
+    <view class="deco-heart" style="top: 20rpx; right: 40rpx; font-size: 90rpx;">🎈</view>
+    <view class="deco-heart" style="top: 90rpx; left: 50rpx; font-size: 60rpx; opacity: 0.3;">🎉</view>
+    <view class="hero-title">🎀 我们的纪念日</view>
+    <view class="hero-subtitle">每一个日子都值得被铭记~</view>
+    
+    <!-- 统计卡片 -->
+    <view class="stats-row">
+      <view class="stat-card">
+        <text class="stat-num">{{anniversaries.length}}</text>
+        <text class="stat-label">个纪念日</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-num">{{displayList.length > 0 ? displayList[0].daysTo : '-'}}</text>
+        <text class="stat-label">天后最近一个</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="container container-padding-bottom">
+    <!-- 筛选 -->
+    <scroll-view scroll-x="true" class="filter-scroll" show-scrollbar="{{false}}">
+      <view class="filter-chip {{filter === item.key ? 'active' : ''}}"
+            wx:for="{{filterOptions}}" wx:key="key"
+            data-key="{{item.key}}" bindtap="switchFilter">
+        <text class="chip-emoji">{{item.emoji}}</text>
+        <text class="chip-label">{{item.label}}</text>
+      </view>
+    </scroll-view>
+
+    <!-- 纪念日列表 -->
+    <view class="anniv-list" wx:if="{{displayList.length > 0}}">
+      <view class="anniv-card animate-slide-up {{item.important ? 'important-card' : ''}}"
+            wx:for="{{displayList}}" wx:key="id"
+            style="animation-delay: {{index % 6 * 0.06}}s;"
+            bindtap="editItem" data-id="{{item.id}}"
+            bindlongpress="onItemLongPress" data-id="{{item.id}}">
+        
+        <!-- 天数/倒计时 -->
+        <view class="anniv-count {{item.daysTo >= 0 && item.daysTo <= 7 ? 'urgent' : ''}} {{item.daysTo < 0 ? 'passed' : ''}}">
+          <text class="count-days">{{item.daysTo === 0 ? 'TODAY' : Math.abs(item.daysTo)}}</text>
+          <text class="count-label">{{item.daysTo === 0 ? '就是今天' : (item.daysTo > 0 ? '天后' : '天前')}}</text>
+        </view>
+        
+        <view class="anniv-sep"></view>
+        
+        <view class="anniv-main">
+          <view class="anniv-head">
+            <view class="anniv-emoji-badge">{{item.emoji || '💝'}}</view>
+            <view class="anniv-title-wrap">
+              <text class="anniv-title">{{item.title}}</text>
+              <text class="important-badge" wx:if="{{item.important}}">重要 ⭐</text>
+            </view>
+          </view>
+          
+          <view class="anniv-date-row">
+            <text class="anniv-date">📅 {{item.displayDate}}</text>
+            <text class="anniv-repeat" wx:if="{{item.repeat === 'yearly'}}">🔄 每年</text>
+            <text class="anniv-years" wx:if="{{item.repeat === 'yearly' && item.yearsPassed > 0}}">💫 第{{item.yearsPassed + 1}}年</text>
+          </view>
+          
+          <view class="anniv-since" wx:if="{{item.repeat === 'yearly'}}">
+            从 {{item.date}} 开始，已相伴 {{item.totalDays}} 天
+          </view>
+          
+          <view class="anniv-progress" wx:if="{{item.repeat === 'yearly' && item.daysTo >= 0}}">
+            <view class="progress-bar" style="background: rgba(201,177,255,0.2);">
+              <view class="progress-fill" style="width: {{365 - item.daysTo > 0 ? (1 - item.daysTo / 365) * 100 : 0}}%; background: linear-gradient(90deg, #C9B1FF 0%, #FFB4CC 100%);"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:else>
+      <view class="empty-emoji animate-float">🎂</view>
+      <view class="empty-title">还没有纪念日</view>
+      <view class="empty-desc">记录你们在一起的每一个重要时刻吧~</view>
+      <view class="btn btn-primary mt-32" style="width: 80%;" bindtap="goAdd">+ 添加第一个纪念日</view>
+    </view>
+  </view>
+
+  <!-- 浮动按钮 -->
+  <view class="fab" bindtap="goAdd" style="background: linear-gradient(135deg, #9B7FED 0%, #C9B1FF 100%);">
+    <text>+</text>
+  </view>
+</view>

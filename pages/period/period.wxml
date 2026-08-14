@@ -1,0 +1,139 @@
+<!--pages/period/period.wxml-->
+<view class="page">
+  <!-- 顶部渐变 -->
+  <view class="hero-section hero-pink" style="margin: 0; border-radius: 0 0 48rpx 48rpx;">
+    <view class="deco-heart" style="top: 20rpx; right: 50rpx; font-size: 80rpx;">🌸</view>
+    <view class="deco-heart" style="top: 100rpx; left: 40rpx; font-size: 56rpx; opacity: 0.25;">🌷</view>
+    <view class="hero-title">🌸 身体小助手</view>
+    <view class="hero-subtitle">呵护自己，了解身体~</view>
+    
+    <!-- 状态大卡片 -->
+    <view class="phase-card" wx:if="{{currentPhase}}">
+      <view class="pc-badge" style="background: {{currentPhase.bgColor}}; color: {{currentPhase.color}};">{{currentPhase.phaseName}}</view>
+      <view class="pc-next-info">
+        <view class="next-days">
+          <text class="nd-num">{{daysToNext}}</text>
+          <text class="nd-unit">天后</text>
+        </view>
+        <view class="next-label">下次经期</view>
+        <view class="next-date">{{nextStart}}</view>
+      </view>
+      <view class="pc-desc">{{currentPhase.description}}</view>
+    </view>
+    
+    <view class="phase-card" wx:else bindtap="recordToday">
+      <view class="pc-empty">
+        <text class="pce-emoji">📝</text>
+        <text class="pce-title">还没有经期记录</text>
+        <text class="pce-sub">点击记录今天经期开始</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="container container-padding-bottom">
+    <!-- 快捷记录按钮 -->
+    <view class="quick-record">
+      <view class="qr-btn qr-primary" bindtap="recordToday" wx:if="{{currentPhase && currentPhase.phase !== 'period'}}">
+        <text class="qr-icon">🩸</text>
+        <text class="qr-text">今天来了</text>
+      </view>
+      <view class="qr-btn qr-secondary" bindtap="goRecord">
+        <text class="qr-icon">📋</text>
+        <text class="qr-text">历史记录</text>
+      </view>
+      <view class="qr-btn qr-accent" bindtap="toggleSettings">
+        <text class="qr-icon">⚙️</text>
+        <text class="qr-text">周期设置</text>
+      </view>
+    </view>
+
+    <!-- 周期设置面板 -->
+    <view class="settings-panel" wx:if="{{selectedSettings}}">
+      <view class="sp-title">⚙️ 周期设置</view>
+      <view class="sp-row">
+        <text class="sp-label">月经周期</text>
+        <picker mode="selector" range="{{cycleOptions}}" bindchange="changeCycle">
+          <view class="sp-value">{{periods.cycleLength}} 天 ›</view>
+        </picker>
+      </view>
+      <view class="sp-row">
+        <text class="sp-label">持续天数</text>
+        <picker mode="selector" range="{{periodOptions}}" bindchange="changePeriod">
+          <view class="sp-value">{{periods.periodLength}} 天 ›</view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- 日历 -->
+    <view class="calendar-card">
+      <view class="cal-header">
+        <text class="cal-title">{{monthCalendar.monthLabel}}</text>
+        <view class="cal-legend">
+          <view class="legend-item"><view class="legend-dot dot-period"></view><text>经期</text></view>
+          <view class="legend-item"><view class="legend-dot dot-predicted" style="border-style: dashed;"></view><text>预测</text></view>
+          <view class="legend-item"><view class="legend-dot dot-ovu"></view><text>排卵期</text></view>
+          <view class="legend-item"><view class="legend-dot dot-today"></view><text>今天</text></view>
+        </view>
+      </view>
+      
+      <view class="cal-weekdays">
+        <text class="weekday {{index === 0 || index === 6 ? 'weekend' : ''}}" wx:for="{{monthCalendar.weekLabels}}" wx:key="*this">{{item}}</text>
+      </view>
+      
+      <view class="cal-grid">
+        <view class="cal-cell" wx:for="{{monthCalendar.days}}" wx:key="index">
+          <view class="cell-inner {{item.empty ? 'empty' : ''}}" wx:if="{{!item.empty}}">
+            <view class="cell-bg {{item.isPredicted ? 'bg-predicted' : item.isPeriod ? 'bg-period' : item.isOvulation ? 'bg-ovu' : item.isOvu ? 'bg-ovu-light' : ''}}"></view>
+            <text class="cell-day {{item.isToday ? 'today' : ''}} {{item.isPredicted ? 'text-predicted' : item.isPeriod ? 'text-period' : item.isOvulation ? 'text-ovu' : ''}}">{{item.day}}</text>
+            <view class="ovu-mark" wx:if="{{item.isOvulation}}">✨</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 关键信息 -->
+    <view class="info-grid" wx:if="{{nextStart}}">
+      <view class="info-card info-period">
+        <view class="ic-emoji">🩸</view>
+        <view class="ic-label">下次经期</view>
+        <view class="ic-value">{{nextStart}}</view>
+      </view>
+      <view class="info-card info-ovu">
+        <view class="ic-emoji">✨</view>
+        <view class="ic-label">排卵日</view>
+        <view class="ic-value">{{ovulationDate}}</view>
+      </view>
+      <view class="info-card info-fertile">
+        <view class="ic-emoji">🌸</view>
+        <view class="ic-label">排卵期</view>
+        <view class="ic-value">{{ovulationStart}}<br/>至 {{ovulationEnd}}</view>
+      </view>
+    </view>
+
+    <!-- 健康小贴士 -->
+    <view class="section-title">💡 健康小贴士</view>
+    <view class="tips-list">
+      <view class="tip-card animate-slide-up" wx:for="{{currentTips}}" wx:key="title"
+            style="animation-delay: {{index * 0.08}}s;">
+        <view class="tip-emoji">{{item.emoji}}</view>
+        <view class="tip-body">
+          <view class="tip-title">{{item.title}}</view>
+          <view class="tip-desc">{{item.desc}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 历史记录 -->
+    <view class="section-title" wx:if="{{periods.records.length > 0}}">📜 最近记录</view>
+    <view class="record-list" wx:if="{{periods.records.length > 0}}">
+      <view class="record-item" wx:for="{{periods.records}}" wx:for-index="idx" wx:key="id">
+        <view class="rec-num">#{{periods.records.length - idx}}</view>
+        <view class="rec-info">
+          <view class="rec-date">开始：{{item.startDate}}</view>
+          <view class="rec-note" wx:if="{{item.note}}">{{item.note}}</view>
+        </view>
+        <view class="rec-delete" catchtap="deleteRecord" data-id="{{item.id}}">🗑️</view>
+      </view>
+    </view>
+  </view>
+</view>

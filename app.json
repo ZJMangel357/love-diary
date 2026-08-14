@@ -1,0 +1,60 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/menu/menu",
+    "pages/anniversary/anniversary",
+    "pages/period/period",
+    "pages/moments/moments",
+    "pages/profile/profile",
+    "pages/menu-add/menu-add",
+    "pages/anniversary-add/anniversary-add",
+    "pages/moments-add/moments-add",
+    "pages/period-record/period-record"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#FF6B9D",
+    "navigationBarTitleText": "甜蜜日记",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#FFF5F8"
+  },
+  "tabBar": {
+    "color": "#B8A5A5",
+    "selectedColor": "#FF6B9D",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "甜蜜首页"
+      },
+      {
+        "pagePath": "pages/menu/menu",
+        "text": "爱的菜单"
+      },
+      {
+        "pagePath": "pages/anniversary/anniversary",
+        "text": "纪念日"
+      },
+      {
+        "pagePath": "pages/moments/moments",
+        "text": "时光"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于记录你们的美好时光地点"
+    },
+    "scope.camera": {
+      "desc": "用于拍照记录美好瞬间"
+    }
+  }
+}

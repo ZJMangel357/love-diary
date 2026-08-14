@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "爱的菜单",
+  "navigationBarBackgroundColor": "#5CC9A5",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": false,
+  "usingComponents": {}
+}

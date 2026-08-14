@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "我们的时光",
+  "navigationBarBackgroundColor": "#5CC9A5",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "usingComponents": {}
+}

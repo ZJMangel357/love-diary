@@ -1,0 +1,184 @@
+<!--pages/index/index.wxml-->
+<view class="page">
+  <!-- 顶部渐变装饰区 -->
+  <view class="hero-top">
+    <view class="deco-dot deco-dot-yellow" style="top: -40rpx; right: -30rpx; width: 200rpx; height: 200rpx;"></view>
+    <view class="deco-dot deco-dot-mint" style="bottom: -60rpx; left: -40rpx; width: 180rpx; height: 180rpx;"></view>
+    <view class="deco-heart" style="top: 60rpx; left: 40rpx; font-size: 60rpx;">💗</view>
+    <view class="deco-heart" style="top: 120rpx; right: 80rpx; font-size: 44rpx; animation-delay: 0.5s;">💖</view>
+    
+    <!-- 状态栏占位 -->
+    <view style="height: {{statusBarHeight}}px;"></view>
+    
+    <!-- 顶部标题 -->
+    <view class="top-bar">
+      <view class="top-title">甜蜜日记</view>
+      <view class="top-date">{{todayStr}}</view>
+    </view>
+    
+    <!-- 情侣卡片 -->
+    <view class="couple-card animate-bounce-in" bindtap="onAvatarTap">
+      <view class="couple-avatars">
+        <view class="avatar-wrap left">
+          <view class="avatar avatar-xl">{{coupleInfo.partnerName1[0] || '他'}}</view>
+          <view class="avatar-ring ring-pink"></view>
+        </view>
+        <view class="love-center">
+          <view class="love-days-num">{{loveDays}}</view>
+          <view class="love-days-label">天</view>
+          <view class="hearts-line">
+            <text class="mini-heart">💕</text>
+            <text class="mini-heart">💕</text>
+            <text class="mini-heart">💕</text>
+          </view>
+        </view>
+        <view class="avatar-wrap right">
+          <view class="avatar avatar-xl">{{coupleInfo.partnerName2[0] || '她'}}</view>
+          <view class="avatar-ring ring-purple"></view>
+        </view>
+      </view>
+      <view class="couple-names">
+        <text class="name-him">{{coupleInfo.partnerName1 || '他'}}</text>
+        <text class="and-symbol"> & </text>
+        <text class="name-her">{{coupleInfo.partnerName2 || '她'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="main-content">
+    <!-- 每日情话 -->
+    <view class="quote-card animate-slide-up" bindtap="changeQuote">
+      <view class="quote-icon">💌</view>
+      <view class="quote-content">
+        <text class="quote-text">{{loveQuote}}</text>
+      </view>
+      <view class="quote-refresh">🔄 换一句</view>
+    </view>
+
+    <!-- 快捷功能入口 -->
+    <view class="section-title">🎯 快速直达</view>
+    <view class="quick-grid">
+      <view class="quick-item animate-slide-up" wx:for="{{quickActions}}" wx:key="id"
+            style="animation-delay: {{index * 0.08}}s;"
+            data-page="{{item.page}}" bindtap="goToPage">
+        <view class="quick-icon quick-{{item.color}}">{{item.icon}}</view>
+        <view class="quick-title">{{item.title}}</view>
+        <view class="quick-desc">{{item.desc}}</view>
+      </view>
+    </view>
+
+    <!-- 今日菜单推荐 -->
+    <view class="section-title" bindtap="goToMenuDetail">
+      🍽️ 今天吃什么
+      <text class="section-more">查看全部 ›</text>
+    </view>
+    <view class="today-menu-card animate-slide-up" wx:if="{{todayMenu}}" bindtap="goToMenuDetail">
+      <view class="menu-dish-emoji">🍳</view>
+      <view class="menu-dish-info">
+        <view class="dish-name-row">
+          <text class="dish-name">{{todayMenu.name}}</text>
+          <view class="dish-fav" wx:if="{{todayMenu.favorite}}">💖</view>
+        </view>
+        <view class="dish-tags">
+          <text class="tag tag-pink">{{todayMenu.category}}</text>
+          <text class="tag tag-mint" wx:for="{{todayMenu.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+        </view>
+        <view class="dish-meta">
+          <text>难度: {{todayMenu.difficulty === 1 ? '⭐' : todayMenu.difficulty === 2 ? '⭐⭐' : '⭐⭐⭐'}}</text>
+          <text class="creator">👨‍🍳 {{todayMenu.creator || '爱心出品'}}</text>
+        </view>
+      </view>
+      <view class="menu-random-btn" catchtap="randomMenu">
+        <text class="dice-emoji">🎲</text>
+        <text class="random-text">换一个</text>
+      </view>
+    </view>
+    <view class="empty-card" wx:else>
+      <text class="empty-emoji">🥗</text>
+      <text class="empty-text">还没有菜品，去添加吧~</text>
+    </view>
+
+    <!-- 最近纪念日 -->
+    <view class="section-title" bindtap="goToAnniversary">
+      📅 即将到来
+      <text class="section-more">全部纪念日 ›</text>
+    </view>
+    <view class="anniv-list" wx:if="{{nearestAnniversaries.length > 0}}">
+      <view class="anniv-item animate-slide-up" wx:for="{{nearestAnniversaries}}" wx:key="id"
+            style="animation-delay: {{index * 0.1}}s;"
+            bindtap="goToAnniversary">
+        <view class="anniv-emoji {{item.important ? 'important' : ''}}">{{item.emoji || '💝'}}</view>
+        <view class="anniv-info">
+          <view class="anniv-title">{{item.title}}</view>
+          <view class="anniv-date">{{item.displayDate}}</view>
+        </view>
+        <view class="anniv-countdown {{item.daysTo <= 7 ? 'urgent' : ''}}">
+          <text class="countdown-num">{{item.daysTo}}</text>
+          <text class="countdown-label">天</text>
+        </view>
+      </view>
+    </view>
+    <view class="empty-card" wx:else>
+      <text class="empty-emoji">🎈</text>
+      <text class="empty-text">暂无纪念日，快去添加你们的重要日子~</text>
+    </view>
+
+    <!-- 经期状态卡片 -->
+    <view class="section-title" bindtap="goToPeriod">
+      🌸 身体小助手
+      <text class="section-more">详情 ›</text>
+    </view>
+    <view class="period-card animate-slide-up" wx:if="{{periodInfo}}" bindtap="goToPeriod">
+      <view class="period-phase" style="background: {{periodInfo.bgColor}};">
+        <text class="phase-text" style="color: {{periodInfo.color}};">{{periodInfo.phaseName}}</text>
+      </view>
+      <view class="period-info-content">
+        <text class="period-desc">{{periodInfo.description}}</text>
+        <view class="progress-bar mt-16">
+          <view class="progress-fill" style="width: {{periodInfo.progress}}%;"></view>
+        </view>
+        <view class="period-next-event">{{periodInfo.nextEvent}}</view>
+      </view>
+      <view class="period-next-days">
+        <text class="next-num">{{periodInfo.daysToNext}}</text>
+        <text class="next-label">天后<br/>下次</text>
+      </view>
+    </view>
+    <view class="period-record-card animate-slide-up" wx:else bindtap="goToPeriod">
+      <view class="pr-icon">🌸</view>
+      <view class="pr-info">
+        <text class="pr-title">还没有记录经期</text>
+        <text class="pr-desc">点击记录，预测下次经期时间</text>
+      </view>
+      <text class="pr-arrow">›</text>
+    </view>
+
+    <!-- 最近时光 -->
+    <view class="section-title" bindtap="goToMoments">
+      💝 我们的时光
+      <text class="section-more">更多回忆 ›</text>
+    </view>
+    <scroll-view scroll-x="true" class="moments-scroll" wx:if="{{recentMoments.length > 0}}">
+      <view class="moment-card animate-slide-up" wx:for="{{recentMoments}}" wx:key="id"
+            bindtap="goToMoments">
+        <view class="moment-mood">{{item.mood || '💕'}}</view>
+        <view class="moment-title">{{item.title}}</view>
+        <view class="moment-content">{{item.content}}</view>
+        <view class="moment-footer">
+          <text class="moment-date">{{item.date}}</text>
+          <text class="moment-location" wx:if="{{item.location}}">📍{{item.location}}</text>
+        </view>
+      </view>
+      <view class="moment-card add-card" bindtap="goToPage" data-page="/pages/moments-add/moments-add">
+        <text class="add-plus">+</text>
+        <text class="add-text">记录<br/>新时光</text>
+      </view>
+    </scroll-view>
+    <view class="empty-card" wx:else bindtap="goToPage" data-page="/pages/moments-add/moments-add">
+      <text class="empty-emoji">📷</text>
+      <text class="empty-text">还没有记录，点击添加第一个美好瞬间吧~</text>
+    </view>
+
+    <view style="height: 120rpx;"></view>
+  </view>
+</view>

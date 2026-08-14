@@ -1,0 +1,339 @@
+/* pages/moments/moments.wxss */
+.page {
+  min-height: 100vh;
+  background: #F0FFF9;
+}
+
+.hero-section {
+  padding: 40rpx 32rpx 48rpx;
+}
+
+.moments-stats {
+  margin-top: 28rpx;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 32rpx;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 10rpx 28rpx rgba(0,0,0,0.08);
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-big {
+  font-size: 44rpx;
+  font-weight: 900;
+  background: linear-gradient(135deg, #5CC9A5 0%, #FFD93D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  line-height: 1.2;
+}
+
+.stat-small {
+  font-size: 22rpx;
+  color: #8A7F8A;
+}
+
+.stat-divider {
+  width: 2rpx;
+  height: 56rpx;
+  background: linear-gradient(180deg, transparent, #E8E8E8, transparent);
+}
+
+.container {
+  padding-top: 24rpx;
+}
+
+.tool-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.year-scroll {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.year-chip {
+  display: inline-block;
+  padding: 14rpx 26rpx;
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  font-size: 26rpx;
+  color: #8A7F8A;
+  margin-right: 12rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.04);
+  transition: all 0.3s ease;
+}
+
+.year-chip.active {
+  background: linear-gradient(135deg, #5CC9A5 0%, #A8E6CF 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 6rpx 20rpx rgba(92,201,165,0.35);
+}
+
+.view-toggle {
+  background: #FFFFFF;
+  padding: 14rpx 22rpx;
+  border-radius: 28rpx;
+  font-size: 24rpx;
+  color: #5CC9A5;
+  font-weight: 600;
+  box-shadow: 0 4rpx 12rpx rgba(92,201,165,0.15);
+  flex-shrink: 0;
+}
+
+/* 时间线样式 */
+.tl-group {
+  margin-bottom: 32rpx;
+}
+
+.tl-month-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #5CC9A5 0%, #A8E6CF 100%);
+  padding: 10rpx 24rpx;
+  border-radius: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(92,201,165,0.3);
+}
+
+.mbg-text {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-right: 12rpx;
+}
+
+.mbg-count {
+  font-size: 20rpx;
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.2);
+  padding: 4rpx 14rpx;
+  border-radius: 14rpx;
+}
+
+.tl-list {
+  padding-left: 20rpx;
+}
+
+.tl-item {
+  display: flex;
+  margin-bottom: 24rpx;
+}
+
+.tl-node {
+  width: 40rpx;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 28rpx;
+}
+
+.tl-dot {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FFD93D 100%);
+  box-shadow: 0 0 0 6rpx rgba(255,107,157,0.15);
+  z-index: 2;
+}
+
+.tl-line {
+  flex: 1;
+  width: 4rpx;
+  background: linear-gradient(180deg, rgba(255,107,157,0.3) 0%, rgba(92,201,165,0.3) 100%);
+  border-radius: 2rpx;
+  margin-top: 8rpx;
+  min-height: 60rpx;
+}
+
+.tl-content {
+  flex: 1;
+  margin-left: 20rpx;
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  padding: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(92,201,165,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.tl-content::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 24rpx;
+  bottom: 24rpx;
+  width: 8rpx;
+  background: linear-gradient(180deg, #A8E6CF 0%, #FFD93D 100%);
+  border-radius: 4rpx;
+}
+
+.tl-mood {
+  font-size: 48rpx;
+  margin-bottom: 12rpx;
+}
+
+.tl-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+}
+
+.tl-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #4A4A4A;
+  flex: 1;
+  margin-right: 12rpx;
+}
+
+.tl-time {
+  font-size: 22rpx;
+  color: #FF6B9D;
+  font-weight: 600;
+  background: rgba(255,107,157,0.1);
+  padding: 6rpx 14rpx;
+  border-radius: 14rpx;
+  flex-shrink: 0;
+}
+
+.tl-body {
+  font-size: 26rpx;
+  color: #6A6A6A;
+  line-height: 1.7;
+  margin-bottom: 12rpx;
+}
+
+.tl-images {
+  margin-bottom: 12rpx;
+}
+
+.tl-image-count {
+  display: inline-block;
+  background: linear-gradient(135deg, #FFF8E0 0%, #FFFEF0 100%);
+  padding: 8rpx 18rpx;
+  border-radius: 18rpx;
+  font-size: 22rpx;
+  color: #B8943D;
+  font-weight: 500;
+}
+
+.tl-footer {
+  display: flex;
+  align-items: center;
+  font-size: 22rpx;
+  color: #B8A5A5;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-bottom: 14rpx;
+}
+
+.tl-actions {
+  display: flex;
+  gap: 12rpx;
+  border-top: 2rpx dashed #F0FFF0;
+  padding-top: 14rpx;
+}
+
+.tl-act-btn {
+  font-size: 24rpx;
+  color: #5CC9A5;
+  font-weight: 600;
+  padding: 8rpx 20rpx;
+  background: rgba(92,201,165,0.1);
+  border-radius: 18rpx;
+}
+
+.tl-act-btn.del {
+  color: #FF6B9D;
+  background: rgba(255,107,157,0.1);
+}
+
+/* 相册视图 */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+
+.gallery-item {
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 24rpx rgba(92,201,165,0.12);
+  transition: all 0.2s ease;
+}
+
+.gallery-item:active {
+  transform: scale(0.97);
+}
+
+.gi-visual {
+  aspect-ratio: 1.2;
+  background: linear-gradient(135deg, #F0FFF9 0%, #FFFEF0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.gi-mood {
+  font-size: 100rpx;
+  animation: float 3s ease-in-out infinite;
+}
+
+.gi-images {
+  position: absolute;
+  right: 16rpx;
+  top: 16rpx;
+  background: rgba(255,107,157,0.9);
+  padding: 6rpx 14rpx;
+  border-radius: 18rpx;
+}
+
+.gi-img-count {
+  font-size: 20rpx;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.gi-info {
+  padding: 16rpx 20rpx 20rpx;
+}
+
+.gi-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+  margin-bottom: 4rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gi-date {
+  font-size: 22rpx;
+  color: #B8A5A5;
+}
+
+.end-hint {
+  text-align: center;
+  padding: 60rpx 0 20rpx;
+  font-size: 26rpx;
+  color: #8A7F8A;
+}

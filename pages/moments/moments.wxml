@@ -1,0 +1,125 @@
+<!--pages/moments/moments.wxml-->
+<view class="page">
+  <!-- 顶部装饰 -->
+  <view class="hero-section hero-mint" style="margin: 0; border-radius: 0 0 48rpx 48rpx;">
+    <view class="deco-heart" style="top: 20rpx; right: 50rpx; font-size: 90rpx;">💝</view>
+    <view class="deco-heart" style="top: 100rpx; left: 40rpx; font-size: 60rpx; opacity: 0.25;">✨</view>
+    <view class="hero-title">✨ 我们的时光</view>
+    <view class="hero-subtitle">每一刻都值得被珍藏~</view>
+    
+    <view class="moments-stats">
+      <view class="stat-item">
+        <text class="stat-big">{{moments.length}}</text>
+        <text class="stat-small">段回忆</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-big">{{viewCount}}</text>
+        <text class="stat-small">次翻阅</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-big">{{yearOptions.length - 1}}</text>
+        <text class="stat-small">年时光</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="container container-padding-bottom">
+    <!-- 年份筛选 + 视图切换 -->
+    <view class="tool-row">
+      <scroll-view scroll-x="true" class="year-scroll" show-scrollbar="{{false}}">
+        <view class="year-chip {{selectedYear === item ? 'active' : ''}}"
+              wx:for="{{yearOptions}}" wx:key="*this"
+              data-year="{{item}}" bindtap="switchYear">
+          {{item === 'all' ? '全部' : item + '年'}}
+        </view>
+      </scroll-view>
+      <view class="view-toggle" bindtap="switchView">
+        {{viewMode === 'timeline' ? '🖼️ 相册' : '📜 时间线'}}
+      </view>
+    </view>
+
+    <!-- 时间线视图 -->
+    <view wx:if="{{viewMode === 'timeline'}}">
+      <block wx:if="{{displayMoments.length > 0}}">
+        <view class="tl-group animate-fade-in" wx:for="{{displayMoments}}" wx:for-item="group" wx:key="monthKey">
+          <view class="tl-month-badge">
+            <text class="mbg-text">{{group.monthKey}}</text>
+            <text class="mbg-count">{{group.count}}件</text>
+          </view>
+          
+          <view class="tl-list">
+            <view class="tl-item animate-slide-up" wx:for="{{group.items}}" wx:for-item="moment" wx:key="id"
+                  style="animation-delay: {{index * 0.06}}s;"
+                  data-id="{{moment.id}}" bindtap="previewItem">
+              <view class="tl-node">
+                <view class="tl-dot"></view>
+                <view class="tl-line" wx:if="{{index < group.items.length - 1 || group.items.length > 1}}"></view>
+              </view>
+              
+              <view class="tl-content">
+                <view class="tl-mood">{{moment.mood || '💕'}}</view>
+                <view class="tl-header">
+                  <text class="tl-title">{{moment.title}}</text>
+                  <text class="tl-time">{{moment.relativeTime}}</text>
+                </view>
+                <view class="tl-body" wx:if="{{moment.content}}">
+                  {{moment.content}}
+                </view>
+                <view class="tl-images" wx:if="{{moment.images && moment.images.length > 0}}">
+                  <view class="tl-image-count">📷 {{moment.images.length}}张照片</view>
+                </view>
+                <view class="tl-footer">
+                  <text class="tl-date">📅 {{moment.date}}</text>
+                  <text class="tl-location" wx:if="{{moment.location}}">📍 {{moment.location}}</text>
+                </view>
+                <view class="tl-actions">
+                  <view class="tl-act-btn" catchtap="editItem" data-id="{{moment.id}}">✏️ 编辑</view>
+                  <view class="tl-act-btn del" catchtap="deleteItem" data-id="{{moment.id}}">🗑️ 删除</view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 相册视图 -->
+    <view wx:else>
+      <view class="gallery-grid" wx:if="{{displayMoments.length > 0}}">
+        <view class="gallery-item animate-slide-up" wx:for="{{displayMoments}}" wx:key="id"
+              style="animation-delay: {{index % 8 * 0.04}}s;"
+              data-id="{{item.id}}" bindtap="previewItem">
+          <view class="gi-visual">
+            <view class="gi-mood">{{item.mood || '💕'}}</view>
+            <view class="gi-images" wx:if="{{item.images && item.images.length > 0}}">
+              <text class="gi-img-count">📷 {{item.images.length}}</text>
+            </view>
+          </view>
+          <view class="gi-info">
+            <view class="gi-title">{{item.title}}</view>
+            <view class="gi-date">{{item.date}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{moments.length === 0}}">
+      <view class="empty-emoji animate-float">📷</view>
+      <view class="empty-title">还没有记录</view>
+      <view class="empty-desc">记录下你们的每一个甜蜜瞬间吧~</view>
+      <view class="btn btn-primary mt-32" style="width: 80%;" bindtap="goAdd">+ 记录第一个瞬间</view>
+    </view>
+
+    <view class="end-hint" wx:if="{{moments.length > 0 && (viewMode === 'timeline' ? displayMoments[0] && displayMoments[0].items && displayMoments[0].items.length > 0 : displayMoments.length > 0)}}">
+      <text>💖 愿时光温柔，岁月静好 💖</text>
+    </view>
+  </view>
+
+  <!-- 浮动按钮 -->
+  <view class="fab" bindtap="goAdd" style="background: linear-gradient(135deg, #5CC9A5 0%, #FFD93D 100%);">
+    <text>+</text>
+  </view>
+</view>

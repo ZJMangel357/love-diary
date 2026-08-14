@@ -1,0 +1,283 @@
+/* pages/profile/profile.wxss */
+.page {
+  min-height: 100vh;
+  background: #FFF5F8;
+}
+
+.hero-section {
+  padding: 40rpx 32rpx 48rpx;
+}
+
+.couple-big-card {
+  margin-top: 28rpx;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 40rpx;
+  padding: 36rpx 28rpx 28rpx;
+  box-shadow: 0 16rpx 48rpx rgba(0,0,0,0.12);
+}
+
+.cbc-avatars {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 20rpx;
+  position: relative;
+}
+
+.avatar-wrap-l, .avatar-wrap-r {
+  position: relative;
+}
+
+.small-heart {
+  position: absolute;
+  font-size: 28rpx;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.heart-1 {
+  top: -10rpx;
+  right: -16rpx;
+}
+
+.heart-2 {
+  top: -10rpx;
+  left: -16rpx;
+  animation-delay: 0.75s;
+}
+
+.cbc-love {
+  text-align: center;
+}
+
+.love-since {
+  display: block;
+  font-size: 22rpx;
+  color: #8A7F8A;
+}
+
+.love-days-big {
+  display: block;
+  font-size: 64rpx;
+  font-weight: 900;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FFD93D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.love-days-unit {
+  font-size: 22rpx;
+  color: #B8A5A5;
+  font-weight: 600;
+}
+
+.cbc-names {
+  text-align: center;
+  margin-top: 24rpx;
+  padding-top: 20rpx;
+  border-top: 2rpx dashed #FFE4EF;
+}
+
+.cbc-name {
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.cbc-name.him { color: #5C8BCC; }
+.cbc-name.her { color: #FF6B9D; }
+
+.cbc-and {
+  font-size: 26rpx;
+  color: #B8A5A5;
+  margin: 0 12rpx;
+}
+
+.cbc-edit-tip {
+  text-align: center;
+  font-size: 22rpx;
+  color: #B8A5A5;
+  margin-top: 12rpx;
+}
+
+/* 统计卡片 */
+.stats-card {
+  background: #FFFFFF;
+  border-radius: 36rpx;
+  padding: 28rpx;
+  box-shadow: 0 12rpx 36rpx rgba(255,107,157,0.1);
+  margin-bottom: 24rpx;
+}
+
+.sc-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+  margin-bottom: 20rpx;
+}
+
+.sc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.sc-item {
+  text-align: center;
+}
+
+.sc-num {
+  font-size: 40rpx;
+  font-weight: 900;
+  background: linear-gradient(135deg, #FF6B9D 0%, #9B7FED 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  line-height: 1.2;
+}
+
+.sc-label {
+  font-size: 22rpx;
+  color: #8A7F8A;
+}
+
+/* 主题卡片 */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+  margin-bottom: 16rpx;
+}
+
+.theme-card {
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  padding: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.05);
+  position: relative;
+  transition: all 0.3s ease;
+  border: 4rpx solid transparent;
+}
+
+.theme-card.active {
+  border-color: #FF6B9D;
+  box-shadow: 0 8rpx 28rpx rgba(255,107,157,0.2);
+  background: linear-gradient(135deg, #FFFBFD 0%, #FFFFFF 100%);
+}
+
+.theme-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.tp-colors {
+  display: flex;
+  gap: 8rpx;
+}
+
+.tp-dot {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+}
+
+.tp-emoji {
+  font-size: 44rpx;
+}
+
+.theme-name {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+}
+
+.theme-check {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FFD93D 100%);
+  color: #FFFFFF;
+  font-size: 24rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 12rpx rgba(255,107,157,0.3);
+}
+
+/* 设置列表 */
+.settings-list {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 8rpx 0;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 28rpx;
+  border-bottom: 2rpx solid #FFF5F8;
+  transition: background 0.2s;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-item:active {
+  background: #FFF9FB;
+}
+
+.si-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.si-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.si-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+  margin-bottom: 4rpx;
+}
+
+.si-subtitle {
+  display: block;
+  font-size: 22rpx;
+  color: #B8A5A5;
+}
+
+.si-arrow {
+  font-size: 40rpx;
+  color: #D8C5C5;
+  margin-left: 12rpx;
+  flex-shrink: 0;
+}
+
+.footer-sign {
+  text-align: center;
+  padding: 48rpx 0 16rpx;
+  font-size: 24rpx;
+  color: #C4A5A5;
+}

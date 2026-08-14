@@ -1,0 +1,638 @@
+/* pages/index/index.wxss */
+.page {
+  min-height: 100vh;
+  background: #FFF5F8;
+}
+
+/* 顶部渐变区域 */
+.hero-top {
+  position: relative;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF8FB3 40%, #FFD93D 100%);
+  padding: 0 32rpx 48rpx;
+  border-radius: 0 0 60rpx 60rpx;
+  overflow: hidden;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0 32rpx;
+}
+
+.top-title {
+  font-size: 40rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  text-shadow: 0 4rpx 16rpx rgba(0,0,0,0.1);
+}
+
+.top-date {
+  font-size: 24rpx;
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.2);
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  backdrop-filter: blur(10px);
+}
+
+/* 情侣卡片 */
+.couple-card {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 40rpx;
+  padding: 40rpx 32rpx;
+  box-shadow: 0 20rpx 60rpx rgba(0,0,0,0.12);
+  position: relative;
+  margin-top: 8rpx;
+}
+
+.couple-avatars {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20rpx;
+}
+
+.avatar-wrap {
+  position: relative;
+}
+
+.avatar-ring {
+  position: absolute;
+  top: -8rpx;
+  left: -8rpx;
+  right: -8rpx;
+  bottom: -8rpx;
+  border-radius: 50%;
+  opacity: 0.4;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.ring-pink {
+  border: 4rpx solid #FF6B9D;
+}
+
+.ring-purple {
+  border: 4rpx solid #C9B1FF;
+  animation-delay: 1s;
+}
+
+.love-center {
+  text-align: center;
+  flex: 1;
+}
+
+.love-days-num {
+  font-size: 72rpx;
+  font-weight: 900;
+  background: linear-gradient(135deg, #FF6B9D 0%, #C9B1FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.love-days-label {
+  font-size: 26rpx;
+  color: #8A7F8A;
+  font-weight: 600;
+  margin-top: 4rpx;
+}
+
+.hearts-line {
+  margin-top: 12rpx;
+}
+
+.mini-heart {
+  font-size: 28rpx;
+  margin: 0 4rpx;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.mini-heart:nth-child(2) { animation-delay: 0.3s; }
+.mini-heart:nth-child(3) { animation-delay: 0.6s; }
+
+.couple-names {
+  text-align: center;
+  margin-top: 28rpx;
+  padding-top: 24rpx;
+  border-top: 2rpx dashed #FFE4EF;
+}
+
+.name-him {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #5C8BCC;
+}
+
+.name-her {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #FF6B9D;
+}
+
+.and-symbol {
+  font-size: 28rpx;
+  color: #B8A5A5;
+  margin: 0 12rpx;
+}
+
+/* 主内容区 */
+.main-content {
+  padding: 32rpx 32rpx 48rpx;
+  margin-top: -20rpx;
+  position: relative;
+  z-index: 10;
+}
+
+/* 情话卡片 */
+.quote-card {
+  background: linear-gradient(135deg, #FFF8E0 0%, #FFFBF0 60%, #F0FFF9 100%);
+  border-radius: 32rpx;
+  padding: 28rpx 32rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8rpx 28rpx rgba(255,217,61,0.18);
+  margin-bottom: 32rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.quote-card::after {
+  content: '✨';
+  position: absolute;
+  right: 20rpx;
+  top: -10rpx;
+  font-size: 60rpx;
+  opacity: 0.15;
+}
+
+.quote-icon {
+  font-size: 52rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.quote-content {
+  flex: 1;
+}
+
+.quote-text {
+  font-size: 28rpx;
+  color: #7A6A3D;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.quote-refresh {
+  font-size: 22rpx;
+  color: #B8943D;
+  background: rgba(255,217,61,0.3);
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  flex-shrink: 0;
+  margin-left: 12rpx;
+}
+
+/* 区块标题 */
+.section-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+  margin: 32rpx 0 20rpx;
+  display: flex;
+  align-items: center;
+}
+
+.section-more {
+  margin-left: auto;
+  font-size: 24rpx;
+  color: #FF6B9D;
+  font-weight: 500;
+}
+
+/* 快速入口 */
+.quick-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -12rpx;
+}
+
+.quick-item {
+  width: calc(50% - 24rpx);
+  margin: 0 12rpx 24rpx;
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 28rpx 24rpx;
+  box-shadow: 0 8rpx 28rpx rgba(255,107,157,0.1);
+  transition: all 0.3s ease;
+}
+
+.quick-item:active {
+  transform: scale(0.96);
+}
+
+.quick-icon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44rpx;
+  margin-bottom: 16rpx;
+}
+
+.quick-pink { background: linear-gradient(135deg, rgba(255,107,157,0.2) 0%, rgba(255,180,204,0.3) 100%); }
+.quick-mint { background: linear-gradient(135deg, rgba(168,230,207,0.4) 0%, rgba(196,245,217,0.5) 100%); }
+.quick-yellow { background: linear-gradient(135deg, rgba(255,217,61,0.3) 0%, rgba(255,230,128,0.4) 100%); }
+.quick-purple { background: linear-gradient(135deg, rgba(201,177,255,0.35) 0%, rgba(220,204,255,0.45) 100%); }
+
+.quick-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+  margin-bottom: 6rpx;
+}
+
+.quick-desc {
+  font-size: 22rpx;
+  color: #8A7F8A;
+}
+
+/* 今日菜单卡片 */
+.today-menu-card {
+  background: #FFFFFF;
+  border-radius: 36rpx;
+  padding: 28rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 12rpx 36rpx rgba(255,107,157,0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.today-menu-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 12rpx;
+  background: linear-gradient(180deg, #FF6B9D 0%, #FFD93D 100%);
+}
+
+.menu-dish-emoji {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(135deg, #FFF5F8 0%, #FFFEF0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64rpx;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.menu-dish-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.dish-name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.dish-name {
+  font-size: 34rpx;
+  font-weight: 800;
+  color: #4A4A4A;
+}
+
+.dish-fav {
+  font-size: 28rpx;
+  margin-left: 10rpx;
+}
+
+.dish-tags {
+  margin-bottom: 12rpx;
+}
+
+.dish-meta {
+  display: flex;
+  align-items: center;
+  font-size: 22rpx;
+  color: #8A7F8A;
+}
+
+.creator {
+  margin-left: auto;
+  font-weight: 600;
+  color: #FF6B9D;
+}
+
+.menu-random-btn {
+  margin-left: 16rpx;
+  padding: 16rpx;
+  background: linear-gradient(135deg, #FFE8F0 0%, #FFF8E0 100%);
+  border-radius: 24rpx;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.dice-emoji {
+  font-size: 36rpx;
+  display: block;
+}
+
+.random-text {
+  font-size: 20rpx;
+  color: #FF6B9D;
+  font-weight: 600;
+}
+
+/* 空状态卡片 */
+.empty-card {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 48rpx 32rpx;
+  text-align: center;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.04);
+}
+
+.empty-emoji {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: #8A7F8A;
+}
+
+/* 纪念日列表 */
+.anniv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.anniv-item {
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 6rpx 20rpx rgba(255,107,157,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.anniv-emoji {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #FFF5F8 0%, #F0FFF9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.anniv-emoji.important {
+  background: linear-gradient(135deg, #FFE8F0 0%, #FFF8E0 100%);
+  box-shadow: 0 0 0 4rpx rgba(255,217,61,0.3);
+}
+
+.anniv-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.anniv-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+  margin-bottom: 6rpx;
+}
+
+.anniv-date {
+  font-size: 24rpx;
+  color: #8A7F8A;
+}
+
+.anniv-countdown {
+  text-align: center;
+  padding: 12rpx 20rpx;
+  background: linear-gradient(135deg, rgba(201,177,255,0.25) 0%, rgba(255,180,204,0.25) 100%);
+  border-radius: 20rpx;
+  flex-shrink: 0;
+}
+
+.anniv-countdown.urgent {
+  background: linear-gradient(135deg, rgba(255,107,157,0.3) 0%, rgba(255,217,61,0.3) 100%);
+}
+
+.countdown-num {
+  font-size: 40rpx;
+  font-weight: 900;
+  color: #FF6B9D;
+  display: block;
+  line-height: 1;
+}
+
+.countdown-label {
+  font-size: 20rpx;
+  color: #8A7F8A;
+}
+
+/* 经期卡片 */
+.period-card {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 28rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 10rpx 32rpx rgba(201,177,255,0.15);
+}
+
+.period-phase {
+  padding: 14rpx 20rpx;
+  border-radius: 20rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.phase-text {
+  font-size: 26rpx;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.period-info-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.period-desc {
+  font-size: 26rpx;
+  color: #4A4A4A;
+}
+
+.period-next-event {
+  font-size: 22rpx;
+  color: #8A7F8A;
+  margin-top: 10rpx;
+}
+
+.period-next-days {
+  text-align: center;
+  margin-left: 16rpx;
+  padding-left: 16rpx;
+  border-left: 2rpx dashed #F0E6E6;
+  flex-shrink: 0;
+}
+
+.next-num {
+  font-size: 44rpx;
+  font-weight: 900;
+  color: #C9B1FF;
+  display: block;
+  line-height: 1;
+}
+
+.next-label {
+  font-size: 18rpx;
+  color: #8A7F8A;
+  line-height: 1.2;
+}
+
+.period-record-card {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 28rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 10rpx 32rpx rgba(255,107,157,0.1);
+}
+
+.pr-icon {
+  font-size: 56rpx;
+  margin-right: 20rpx;
+}
+
+.pr-info {
+  flex: 1;
+}
+
+.pr-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+  display: block;
+  margin-bottom: 6rpx;
+}
+
+.pr-desc {
+  font-size: 24rpx;
+  color: #8A7F8A;
+}
+
+.pr-arrow {
+  font-size: 40rpx;
+  color: #B8A5A5;
+}
+
+/* 时光记录横滑 */
+.moments-scroll {
+  white-space: nowrap;
+  padding: 8rpx 0 16rpx;
+  margin: 0 -32rpx;
+  padding-left: 32rpx;
+}
+
+.moment-card {
+  display: inline-block;
+  width: 400rpx;
+  vertical-align: top;
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 24rpx;
+  margin-right: 20rpx;
+  box-shadow: 0 8rpx 28rpx rgba(168,230,207,0.18);
+  white-space: normal;
+}
+
+.moment-mood {
+  font-size: 52rpx;
+  margin-bottom: 12rpx;
+}
+
+.moment-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+  margin-bottom: 8rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.moment-content {
+  font-size: 24rpx;
+  color: #8A7F8A;
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.moment-footer {
+  display: flex;
+  align-items: center;
+  font-size: 22rpx;
+  color: #B8A5A5;
+}
+
+.moment-location {
+  margin-left: auto;
+  max-width: 200rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.moment-card.add-card {
+  background: linear-gradient(135deg, #F0FFF9 0%, #FFF5F8 100%);
+  border: 3rpx dashed #A8E6CF;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 240rpx;
+  box-sizing: border-box;
+}
+
+.add-plus {
+  font-size: 72rpx;
+  color: #A8E6CF;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.add-text {
+  font-size: 24rpx;
+  color: #5CC9A5;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 8rpx;
+}

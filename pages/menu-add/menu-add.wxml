@@ -1,0 +1,77 @@
+<!--pages/menu-add/menu-add.wxml-->
+<view class="page">
+  <view class="form-container">
+    <view class="form-section">
+      <view class="section-label">🍳 菜品名称</view>
+      <input class="form-input" placeholder="比如：番茄炒蛋、红烧排骨..." 
+             value="{{name}}" bindinput="onInputName" maxlength="30" />
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">📂 分类</view>
+      <picker mode="selector" range="{{categories}}" bindchange="changeCategory">
+        <view class="form-picker">
+          <text>{{category}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">🏷️ 标签（点击选择，最多6个）</view>
+      <view class="preset-tags">
+        <view class="preset-tag {{selectedPreset.includes(item) ? 'active' : ''}}"
+              wx:for="{{presetTags}}" wx:key="*this"
+              data-tag="{{item}}" bindtap="togglePresetTag">
+          {{item}}
+        </view>
+      </view>
+      <view class="custom-tag-row" wx:if="{{tags.length > 0}}">
+        <view class="tag-chip" wx:for="{{tags}}" wx:key="*this">
+          {{item}}
+          <text class="tag-remove" data-tag="{{item}}" catchtap="removeTag">×</text>
+        </view>
+      </view>
+      <view class="tag-input-row">
+        <input class="form-input tag-input" placeholder="自定义标签..." 
+               value="{{tagInput}}" bindinput="onTagInput" maxlength="8" confirm-type="done"
+               bindconfirm="addTag" />
+        <view class="btn btn-primary btn-small" style="padding: 14rpx 24rpx;" bindtap="addTag">添加</view>
+      </view>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">⭐ 难度</view>
+      <view class="diff-row">
+        <view class="diff-item {{difficulty === 1 ? 'active' : ''}}" data-level="1" bindtap="changeDifficulty">
+          <text class="diff-stars">⭐☆☆</text>
+          <text class="diff-text">简单</text>
+        </view>
+        <view class="diff-item {{difficulty === 2 ? 'active' : ''}}" data-level="2" bindtap="changeDifficulty">
+          <text class="diff-stars">⭐⭐☆</text>
+          <text class="diff-text">中等</text>
+        </view>
+        <view class="diff-item {{difficulty === 3 ? 'active' : ''}}" data-level="3" bindtap="changeDifficulty">
+          <text class="diff-stars">⭐⭐⭐</text>
+          <text class="diff-text">挑战</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">👨‍🍳 谁常做这道菜？</view>
+      <picker mode="selector" range="{{creators}}" bindchange="changeCreator">
+        <view class="form-picker">
+          <text>{{creator}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <view style="height: 48rpx;"></view>
+
+    <view class="btn btn-primary btn-block save-btn" bindtap="save">
+      {{isEdit ? '💾 保存修改' : '🎉 添加这道菜'}}
+    </view>
+  </view>
+</view>

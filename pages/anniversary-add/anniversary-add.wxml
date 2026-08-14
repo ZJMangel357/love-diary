@@ -1,0 +1,80 @@
+<!--pages/anniversary-add/anniversary-add.wxml-->
+<view class="page">
+  <view class="form-container">
+    <!-- 预览区 -->
+    <view class="preview-card">
+      <view class="pc-emoji">{{emoji}}</view>
+      <view class="pc-info">
+        <text class="pc-title">{{title || '纪念日标题'}}</text>
+        <text class="pc-date">📅 {{date || '选择日期'}}</text>
+        <view class="pc-tags">
+          <text class="tag tag-purple" wx:if="{{important}}">⭐ 重要</text>
+          <text class="tag tag-pink">{{repeat === 'yearly' ? '🔄 每年' : '🕑 一次'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">✨ 纪念日标题</view>
+      <input class="form-input" placeholder="比如：在一起的日子、第一次约会..." 
+             value="{{title}}" bindinput="onInputTitle" maxlength="25" />
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">📅 日期</view>
+      <picker mode="date" value="{{date}}" start="1990-01-01" end="2099-12-31" bindchange="changeDate">
+        <view class="form-picker">
+          <text style="color: {{date ? '#4A4A4A' : '#B8A5A5'}};">{{date || '请选择日期'}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">🏷️ 类型</view>
+      <view class="type-grid">
+        <view class="type-item {{type === item.key ? 'active' : ''}}"
+              wx:for="{{types}}" wx:key="key"
+              data-key="{{item.key}}" data-emoji="{{item.emoji}}"
+              bindtap="changeType">
+          <text class="ti-emoji">{{item.emoji}}</text>
+          <text class="ti-label">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">🎀 图标表情</view>
+      <view class="emoji-grid">
+        <view class="emoji-item {{emoji === item ? 'active' : ''}}"
+              wx:for="{{emojiList}}" wx:key="*this"
+              data-emoji="{{item}}" bindtap="chooseEmoji">
+          {{item}}
+        </view>
+      </view>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">🔁 重复方式</view>
+      <picker mode="selector" range="{{repeatOptions}}" range-key="label" bindchange="changeRepeat">
+        <view class="form-picker">
+          <text>{{repeat === 'yearly' ? '每年重复' : '只此一次'}}</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-section">
+      <view class="section-label-row">
+        <view class="section-label" style="margin: 0;">⭐ 设为重要纪念日</view>
+        <switch checked="{{important}}" bindchange="toggleImportant" color="#9B7FED" style="transform:scale(0.85)" />
+      </view>
+      <view class="sub-hint">重要纪念日会高亮显示，并在倒计时提醒中优先展示</view>
+    </view>
+
+    <view style="height: 48rpx;"></view>
+    <view class="btn btn-primary btn-block save-btn" bindtap="save">
+      {{isEdit ? '💾 保存修改' : '🎉 添加纪念日'}}
+    </view>
+  </view>
+</view>
