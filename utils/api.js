@@ -1,4 +1,5 @@
 // utils/api.js - 后端API请求工具
+console.log('[api] loaded v3-deviceId-fallback') // 版本标记：用于确认工具加载的是最新代码
 
 const BASE_URL = 'http://localhost:3000/api' // 本地开发地址，部署后替换为服务器地址
 const ROOT_URL = 'http://localhost:3000' // 后端根地址（用于拼接图片等静态资源路径）
@@ -10,11 +11,16 @@ function getToken() {
 
 // 封装请求
 function request(url, method, data) {
+  // 兼容旧版本调用：登录类请求自动附带设备ID，确保降级模式可用
+  const payload = Object.assign({}, data || {})
+  if (payload.code !== undefined && payload.deviceId === undefined) {
+    payload.deviceId = getDeviceId()
+  }
   return new Promise((resolve, reject) => {
     wx.request({
       url: BASE_URL + url,
       method: method || 'GET',
-      data: data || {},
+      data: payload,
       header: {
         'Content-Type': 'application/json',
         'Authorization': getToken() ? 'Bearer ' + getToken() : ''
