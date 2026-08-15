@@ -56,11 +56,17 @@ async function code2Session(code, deviceId) {
   }
 }
 
+// 是否处于本地开发降级模式（未配置微信 AppID/Secret）
+function isDevFallbackMode() {
+  return !process.env.WX_APPID || !process.env.WX_SECRET
+}
+
 // 用户登录（首次登录 → 创建用户 + 生成配对码）
 router.post('/login', async (req, res) => {
   const { code, deviceId, nickName, loveDate } = req.body
   if (!nickName) return res.json(fail('请输入昵称'))
-  if (!code) return res.json(fail('缺少微信登录凭证 code'))
+  // 开发降级模式下允许 code 为空，用设备ID兜底；生产环境必须有微信登录凭证
+  if (!code && !(isDevFallbackMode() && deviceId)) return res.json(fail('缺少微信登录凭证 code'))
 
   try {
     // 用 code 换取 openid（未配置微信时降级使用设备ID）
@@ -119,7 +125,8 @@ router.post('/pair', async (req, res) => {
   const { code, deviceId, nickName, pairingCode, loveDate } = req.body
   if (!nickName) return res.json(fail('请输入昵称'))
   if (!pairingCode) return res.json(fail('缺少配对码'))
-  if (!code) return res.json(fail('缺少微信登录凭证 code'))
+  // 开发降级模式下允许 code 为空，用设备ID兜底；生产环境必须有微信登录凭证
+  if (!code && !(isDevFallbackMode() && deviceId)) return res.json(fail('缺少微信登录凭证 code'))
 
   try {
     // 查找配对码对应的邀请方

@@ -39,14 +39,12 @@ function request(url, method, data) {
 }
 
 // 微信登录（获取code）
+// 开发者工具/异常环境下拿不到 code 时返回空串，由后端降级用设备ID兜底
 function wxLogin() {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     wx.login({
-      success: (res) => {
-        if (res.code) resolve(res.code)
-        else reject(new Error('wx.login 失败'))
-      },
-      fail: reject
+      success: (res) => resolve(res.code || ''),
+      fail: () => resolve('')
     })
   })
 }
