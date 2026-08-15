@@ -64,8 +64,6 @@ function isDevFallbackMode() {
 // 用户登录（首次登录 → 创建用户 + 生成配对码）
 router.post('/login', async (req, res) => {
   const { code, deviceId, nickName, loveDate } = req.body
-  // 调试日志：确认工具实际发出的请求内容
-  console.log('[登录请求] code存在:', !!code, '| deviceId存在:', !!deviceId, '| 降级模式:', isDevFallbackMode(), '| code前8位:', code ? String(code).slice(0, 8) : '(空)')
   if (!nickName) return res.json(fail('请输入昵称'))
   // 开发降级模式下允许 code 为空，用设备ID兜底；生产环境必须有微信登录凭证
   if (!code && !(isDevFallbackMode() && deviceId)) return res.json(fail('缺少微信登录凭证 code'))

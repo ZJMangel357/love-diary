@@ -1,5 +1,4 @@
 // utils/api.js - 后端API请求工具
-console.log('[api] loaded v3-deviceId-fallback') // 版本标记：用于确认工具加载的是最新代码
 
 const BASE_URL = 'http://localhost:3000/api' // 本地开发地址，部署后替换为服务器地址
 const ROOT_URL = 'http://localhost:3000' // 后端根地址（用于拼接图片等静态资源路径）
