@@ -12,6 +12,7 @@ Page({
     loveQuote: '',
     todayMenu: null,
     nearestAnniversaries: [],
+    nextAnniversary: null,    // 最近的纪念日（Hero 区倒计时展示）
     periodInfo: null,
     recentMoments: [],
     singleMode: false,        // 单人体验模式
@@ -69,10 +70,14 @@ Page({
         }
         this.setData({ singleMode: !d.partnered })
 
-        // 构建 coupleInfo
+        // 构建 coupleInfo（单人模式下 partnerName2 留空，WXML 显示虚线占位框）
+        const partnerName1 = d.nickName || '我'
+        const partnerName2 = d.partnered ? (d.partnerName || 'TA') : ''
         const coupleInfo = {
-          partnerName1: d.nickName,
-          partnerName2: d.partnerName || 'TA',
+          partnerName1,
+          partnerName2,
+          avatarText1: partnerName1.charAt(0),       // 头像首字（无真实头像时展示）
+          avatarText2: partnerName2.charAt(0),
           loveDate: d.loveDate,
           partnered: d.partnered
         }
@@ -100,8 +105,15 @@ Page({
       console.error('加载数据失败', e)
       // 网络错误时使用本地缓存兜底
       const userInfo = wx.getStorageSync('userInfo') || {}
+      const fallbackName = userInfo.nickName || '我'
       this.setData({
-        coupleInfo: { partnerName1: userInfo.nickName || '我', partnerName2: 'TA' },
+        coupleInfo: {
+          partnerName1: fallbackName,
+          partnerName2: '',
+          avatarText1: fallbackName.charAt(0),
+          avatarText2: '',
+          partnered: false
+        },
         singleMode: true
       })
     }
@@ -135,7 +147,9 @@ Page({
           }))
           .sort((a, b) => a.daysTo - b.daysTo)
           .slice(0, 3)
-        this.setData({ nearestAnniversaries: sortedAnniversaries })
+        // 取 daysTo 最小的作为下个纪念日，用于 Hero 区倒计时展示
+        const nextAnniversary = sortedAnniversaries.length > 0 ? sortedAnniversaries[0] : null
+        this.setData({ nearestAnniversaries: sortedAnniversaries, nextAnniversary })
       }
     } catch (e) {
       console.error('加载纪念日失败', e)

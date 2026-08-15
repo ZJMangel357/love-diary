@@ -23,7 +23,7 @@ Page({
   async onLoad(options) {
     const categories = util.menuCategories
     this.setData({ categories })
-    
+
     if (options.id) {
       // 编辑模式：从后端拉取菜品详情
       try {
@@ -31,6 +31,8 @@ Page({
         if (res.code === 0) {
           const menu = res.data.find(m => m.id === Number(options.id))
           if (menu) {
+            // 后端返回的图片是相对路径，显示时转为完整URL
+            const image = menu.image ? api.getFullUrl(menu.image) : ''
             this.setData({
               isEdit: true,
               editId: menu.id,
@@ -40,7 +42,7 @@ Page({
               selectedPreset: menu.tags || [],
               difficulty: menu.difficulty || 1,
               creator: menu.creator || '她',
-              image: menu.image || ''
+              image
             })
             wx.setNavigationBarTitle({ title: '编辑菜品' })
           }
@@ -48,6 +50,31 @@ Page({
       } catch (e) {
         console.error('获取菜品详情失败', e)
       }
+    }
+  },
+
+  // 选择菜品图片（单张）
+  chooseImage() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      sizeType: ['compressed'],
+      success: (res) => {
+        this.setData({ image: res.tempFiles[0].tempFilePath })
+      }
+    })
+  },
+
+  // 移除图片
+  removeImage() {
+    this.setData({ image: '' })
+  },
+
+  // 预览图片
+  previewImage() {
+    if (this.data.image) {
+      wx.previewImage({ urls: [this.data.image] })
     }
   },
 
@@ -119,23 +146,32 @@ Page({
       return
     }
 
-    const payload = {
-      name: this.data.name.trim(),
-      category: this.data.category,
-      tags: this.data.tags,
-      difficulty: this.data.difficulty,
-      creator: this.data.creator,
-      image: this.data.image,
-      favorite: false
-    }
+    wx.showLoading({ title: '保存中...' })
 
     try {
+      let imageUrl = this.data.image
+      // 如果是新选择的本地图片（非http开头），先上传
+      if (imageUrl && !imageUrl.startsWith('http')) {
+        imageUrl = await api.uploadImage(imageUrl)
+      }
+
+      const payload = {
+        name: this.data.name.trim(),
+        category: this.data.category,
+        tags: this.data.tags,
+        difficulty: this.data.difficulty,
+        creator: this.data.creator,
+        image: imageUrl,
+        favorite: false
+      }
+
       if (this.data.isEdit) {
         const res = await api.menu.update(this.data.editId, payload)
         if (res.code === 0) {
           wx.showToast({ title: '修改成功 ✅', icon: 'success' })
         } else {
           wx.showToast({ title: res.message || '修改失败', icon: 'none' })
+          wx.hideLoading()
           return
         }
       } else {
@@ -144,6 +180,7 @@ Page({
           wx.showToast({ title: '添加成功 🎉', icon: 'success' })
         } else {
           wx.showToast({ title: res.message || '添加失败', icon: 'none' })
+          wx.hideLoading()
           return
         }
       }
@@ -151,7 +188,8 @@ Page({
         wx.navigateBack()
       }, 800)
     } catch (e) {
-      wx.showToast({ title: '网络错误，请检查后端服务', icon: 'none' })
+      wx.hideLoading()
+      wx.showToast({ title: '保存失败: ' + e.message, icon: 'none' })
     }
   }
 })

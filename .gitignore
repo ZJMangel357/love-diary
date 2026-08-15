@@ -30,3 +30,6 @@ server/.env
 # MySQL 数据目录（本地开发）
 server/mysql-data/
 server/my.ini
+
+# 上传文件目录（用户上传的图片）
+server/uploads/

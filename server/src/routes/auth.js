@@ -1,7 +1,8 @@
-// 认证路由 - 注册/登录/配对
+// 认证路由 - 微信登录/配对
 const express = require('express')
 const router = express.Router()
 const jwt = require('jsonwebtoken')
+const axios = require('axios')
 const pool = require('../config/database')
 const { success, fail } = require('../utils/response')
 require('dotenv').config()
@@ -21,36 +22,73 @@ function genToken(userId, coupleId) {
   })
 }
 
-// 用户登录（首次登录 → 创建用户 + 生成配对码）
-router.post('/login', async (req, res) => {
-  const { nickName, loveDate, openId } = req.body
-  if (!nickName) return res.json(fail('请输入昵称'))
+// 调用微信 code2Session 接口换取 openid
+// 失败时降级使用 code 作为临时 openId，便于本地开发测试
+async function code2Session(code) {
+  const appid = process.env.WX_APPID
+  const secret = process.env.WX_SECRET
+
+  // 没有配置 AppID/AppSecret，直接降级（本地开发）
+  if (!appid || !secret) {
+    console.warn('[微信登录] 未配置 WX_APPID/WX_SECRET，使用 code 作为临时 openId')
+    return { openid: 'dev_' + code, session_key: '' }
+  }
 
   try {
+    const { data } = await axios.get('https://api.weixin.qq.com/sns/jscode2session', {
+      params: {
+        appid,
+        secret,
+        js_code: code,
+        grant_type: 'authorization_code'
+      },
+      timeout: 5000
+    })
+    if (data.errcode) {
+      console.warn('[微信登录] code2Session 返回错误:', data.errcode, data.errmsg)
+      // 降级：用 code 作为临时 openId
+      return { openid: 'dev_' + code, session_key: '' }
+    }
+    return { openid: data.openid, session_key: data.session_key || '' }
+  } catch (e) {
+    console.warn('[微信登录] code2Session 请求失败，降级使用 code 作为临时 openId:', e.message)
+    return { openid: 'dev_' + code, session_key: '' }
+  }
+}
+
+// 用户登录（首次登录 → 创建用户 + 生成配对码）
+router.post('/login', async (req, res) => {
+  const { code, nickName, loveDate } = req.body
+  if (!nickName) return res.json(fail('请输入昵称'))
+  if (!code) return res.json(fail('缺少微信登录凭证 code'))
+
+  try {
+    // 用 code 换取 openid
+    const { openid } = await code2Session(code)
+    if (!openid) return res.json(fail('获取 openid 失败'))
+
     // 检查是否已有该 openId 用户
-    if (openId) {
-      const [existing] = await pool.query('SELECT * FROM users WHERE open_id = ?', [openId])
-      if (existing.length > 0) {
-        const user = existing[0]
-        const [couples] = await pool.query('SELECT * FROM couples WHERE user1_id = ? OR user2_id = ?', [user.id, user.id])
-        const couple = couples[0] || null
-        return res.json(success({
-          userId: user.id,
-          nickName: user.nick_name,
-          pairingCode: user.pairing_code,
-          role: user.role,
-          coupleId: couple?.id || null,
-          partnered: couple?.partnered || false,
-          token: genToken(user.id, couple?.id || null)
-        }))
-      }
+    const [existing] = await pool.query('SELECT * FROM users WHERE open_id = ?', [openid])
+    if (existing.length > 0) {
+      const user = existing[0]
+      const [couples] = await pool.query('SELECT * FROM couples WHERE user1_id = ? OR user2_id = ?', [user.id, user.id])
+      const couple = couples[0] || null
+      return res.json(success({
+        userId: user.id,
+        nickName: user.nick_name,
+        pairingCode: user.pairing_code,
+        role: user.role,
+        coupleId: couple?.id || null,
+        partnered: couple?.partnered || false,
+        token: genToken(user.id, couple?.id || null)
+      }))
     }
 
     // 创建新用户
     const pairingCode = genPairingCode()
     const [result] = await pool.query(
       'INSERT INTO users (open_id, nick_name, pairing_code, role) VALUES (?, ?, ?, ?)',
-      [openId || null, nickName, pairingCode, 'inviter']
+      [openid, nickName, pairingCode, 'inviter']
     )
     const userId = result.insertId
 
@@ -78,9 +116,10 @@ router.post('/login', async (req, res) => {
 
 // 接受配对（被邀请方登录 + 配对）
 router.post('/pair', async (req, res) => {
-  const { nickName, pairingCode, loveDate, openId } = req.body
+  const { code, nickName, pairingCode, loveDate } = req.body
   if (!nickName) return res.json(fail('请输入昵称'))
   if (!pairingCode) return res.json(fail('缺少配对码'))
+  if (!code) return res.json(fail('缺少微信登录凭证 code'))
 
   try {
     // 查找配对码对应的邀请方
@@ -96,10 +135,14 @@ router.post('/pair', async (req, res) => {
 
     if (couple.partnered) return res.json(fail('该配对码已被使用'))
 
+    // 用 code 换取 openid
+    const { openid } = await code2Session(code)
+    if (!openid) return res.json(fail('获取 openid 失败'))
+
     // 创建被邀请方用户
     const [result] = await pool.query(
       'INSERT INTO users (open_id, nick_name, pairing_code, role) VALUES (?, ?, ?, ?)',
-      [openId || null, nickName, pairingCode, 'partner']
+      [openid, nickName, pairingCode, 'partner']
     )
     const partnerUserId = result.insertId
 

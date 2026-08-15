@@ -79,12 +79,7 @@ Page({
     try {
       if (this.data.inviteCode) {
         // 被邀请方：接受配对
-        let openId = wx.getStorageSync('openId')
-        if (!openId) {
-          openId = 'local_' + Date.now() + '_' + Math.floor(Math.random() * 1000000)
-          wx.setStorageSync('openId', openId)
-        }
-        const res = await api.auth.pair(name, this.data.inviteCode, this.data.loveDate, openId)
+        const res = await api.auth.pair(name, this.data.inviteCode, this.data.loveDate)
         if (res.code === 0) {
           wx.setStorageSync('token', res.data.token)
           wx.setStorageSync('userInfo', res.data)
@@ -95,13 +90,7 @@ Page({
         }
       } else {
         // 首次登录：生成配对码
-        // 生成设备唯一标识，避免重复登录创建多个用户
-        let openId = wx.getStorageSync('openId')
-        if (!openId) {
-          openId = 'local_' + Date.now() + '_' + Math.floor(Math.random() * 1000000)
-          wx.setStorageSync('openId', openId)
-        }
-        const res = await api.auth.login(name, this.data.loveDate, openId)
+        const res = await api.auth.login(name, this.data.loveDate)
         if (res.code === 0) {
           wx.setStorageSync('token', res.data.token)
           wx.setStorageSync('userInfo', res.data)

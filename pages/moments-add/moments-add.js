@@ -1,5 +1,6 @@
 // pages/moments-add/moments-add.js
 const util = require('../../utils/util.js')
+const api = require('../../utils/api.js')
 
 Page({
   data: {
@@ -12,10 +13,11 @@ Page({
     location: '',
     mood: '😍',
     moodList: [],
-    images: []
+    images: [],
+    saving: false
   },
 
-  onLoad(options) {
+  async onLoad(options) {
     const today = util.formatDate(new Date(), 'YYYY-MM-DD')
     this.setData({
       todayStr: today,
@@ -24,20 +26,33 @@ Page({
     })
 
     if (options.id) {
-      const list = wx.getStorageSync('moments') || []
-      const item = list.find(m => m.id === Number(options.id))
-      if (item) {
-        this.setData({
-          isEdit: true,
-          editId: item.id,
-          title: item.title,
-          content: item.content,
-          date: item.date,
-          location: item.location || '',
-          mood: item.mood || '😍',
-          images: item.images || []
-        })
-        wx.setNavigationBarTitle({ title: '编辑时光' })
+      try {
+        const res = await api.moment.list()
+        if (res.code === 0) {
+          const item = res.data.find(m => m.id === Number(options.id))
+          if (item) {
+            // 后端返回的images可能是JSON字符串或数组，统一处理
+            let images = item.images || []
+            if (typeof images === 'string') {
+              try { images = JSON.parse(images) } catch (e) { images = [] }
+            }
+            // 转为完整URL用于显示
+            images = images.map(url => api.getFullUrl(url))
+            this.setData({
+              isEdit: true,
+              editId: item.id,
+              title: item.title || '',
+              content: item.content || '',
+              date: item.date,
+              location: item.location || '',
+              mood: item.mood || '😍',
+              images
+            })
+            wx.setNavigationBarTitle({ title: '编辑时光' })
+          }
+        }
+      } catch (e) {
+        console.error('获取时光详情失败', e)
       }
     }
   },
@@ -93,36 +108,59 @@ Page({
     })
   },
 
-  save() {
+  async save() {
+    if (this.data.saving) return
     if (!this.data.title.trim() && !this.data.content.trim() && this.data.images.length === 0) {
       wx.showToast({ title: '至少写点什么吧~', icon: 'none' })
       return
     }
 
-    let list = wx.getStorageSync('moments') || []
-    const payload = {
-      title: this.data.title.trim(),
-      content: this.data.content.trim(),
-      date: this.data.date,
-      location: this.data.location.trim(),
-      mood: this.data.mood,
-      images: this.data.images
-    }
+    this.setData({ saving: true })
+    wx.showLoading({ title: '保存中...' })
 
-    if (this.data.isEdit) {
-      list = list.map(m => m.id === this.data.editId ? { ...m, ...payload } : m)
-      wx.showToast({ title: '修改成功 ✅', icon: 'success' })
-    } else {
-      list.unshift({
-        id: Date.now(),
-        ...payload
+    try {
+      // 上传新选择的本地图片（非http开头的），已是服务器URL的直接保留
+      const uploadTasks = this.data.images.map(img => {
+        if (img.startsWith('http')) return Promise.resolve(img)
+        return api.uploadImage(img)
       })
-      wx.showToast({ title: '记录成功 💖', icon: 'success' })
-    }
+      const serverUrls = await Promise.all(uploadTasks)
 
-    wx.setStorageSync('moments', list)
-    setTimeout(() => {
-      wx.navigateBack()
-    }, 800)
+      const payload = {
+        title: this.data.title.trim(),
+        content: this.data.content.trim(),
+        date: this.data.date,
+        location: this.data.location.trim(),
+        mood: this.data.mood,
+        images: serverUrls
+      }
+
+      if (this.data.isEdit) {
+        const res = await api.moment.update(this.data.editId, payload)
+        if (res.code === 0) {
+          wx.showToast({ title: '修改成功 ✅', icon: 'success' })
+        } else {
+          wx.showToast({ title: res.message || '修改失败', icon: 'none' })
+          this.setData({ saving: false })
+          wx.hideLoading()
+          return
+        }
+      } else {
+        const res = await api.moment.add(payload)
+        if (res.code === 0) {
+          wx.showToast({ title: '记录成功 💖', icon: 'success' })
+        } else {
+          wx.showToast({ title: res.message || '保存失败', icon: 'none' })
+          this.setData({ saving: false })
+          wx.hideLoading()
+          return
+        }
+      }
+      setTimeout(() => wx.navigateBack(), 800)
+    } catch (e) {
+      wx.hideLoading()
+      this.setData({ saving: false })
+      wx.showToast({ title: '保存失败: ' + e.message, icon: 'none' })
+    }
   }
 })

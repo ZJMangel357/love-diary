@@ -1,6 +1,7 @@
 // Express 主入口
 const express = require('express')
 const cors = require('cors')
+const path = require('path')
 require('dotenv').config()
 
 const app = express()
@@ -10,12 +11,16 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// 静态文件服务（图片上传目录）
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
+
 // 路由
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/menus', require('./routes/menu'))
 app.use('/api/anniversaries', require('./routes/anniversary'))
 app.use('/api/period', require('./routes/period'))
 app.use('/api/moments', require('./routes/moment'))
+app.use('/api/upload', require('./routes/upload'))
 
 // 健康检查
 app.get('/api/health', (req, res) => {

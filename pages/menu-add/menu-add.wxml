@@ -3,8 +3,22 @@
   <view class="form-container">
     <view class="form-section">
       <view class="section-label">🍳 菜品名称</view>
-      <input class="form-input" placeholder="比如：番茄炒蛋、红烧排骨..." 
+      <input class="form-input" placeholder="比如：番茄炒蛋、红烧排骨..."
              value="{{name}}" bindinput="onInputName" maxlength="30" />
+    </view>
+
+    <view class="form-section">
+      <view class="section-label">📸 菜品图片（选填）</view>
+      <view class="image-upload-area">
+        <view class="img-preview" wx:if="{{image}}" bindtap="previewImage">
+          <image src="{{image}}" mode="aspectFill" class="preview-img" />
+          <view class="img-remove" catchtap="removeImage">×</view>
+        </view>
+        <view class="img-add" wx:else bindtap="chooseImage">
+          <text class="add-icon">+</text>
+          <text class="add-text">添加图片</text>
+        </view>
+      </view>
     </view>
 
     <view class="form-section">

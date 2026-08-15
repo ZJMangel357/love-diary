@@ -1,6 +1,7 @@
 // utils/api.js - 后端API请求工具
 
 const BASE_URL = 'http://localhost:3000/api' // 本地开发地址，部署后替换为服务器地址
+const ROOT_URL = 'http://localhost:3000' // 后端根地址（用于拼接图片等静态资源路径）
 
 // 获取本地存储的 token
 function getToken() {
@@ -37,15 +38,74 @@ function request(url, method, data) {
   })
 }
 
+// 微信登录（获取code）
+function wxLogin() {
+  return new Promise((resolve, reject) => {
+    wx.login({
+      success: (res) => {
+        if (res.code) resolve(res.code)
+        else reject(new Error('wx.login 失败'))
+      },
+      fail: reject
+    })
+  })
+}
+
+// 获取完整图片URL（后端返回的是相对路径 /uploads/xxx.jpg）
+function getFullUrl(relativeUrl) {
+  if (!relativeUrl) return ''
+  if (relativeUrl.startsWith('http')) return relativeUrl
+  return ROOT_URL + relativeUrl
+}
+
+// 图片上传（单张）
+function uploadImage(filePath) {
+  return new Promise((resolve, reject) => {
+    wx.uploadFile({
+      url: BASE_URL + '/upload',
+      filePath: filePath,
+      name: 'file',
+      header: {
+        'Authorization': getToken() ? 'Bearer ' + getToken() : ''
+      },
+      success: (res) => {
+        try {
+          const data = JSON.parse(res.data)
+          if (data.code === 0) {
+            resolve(data.data.url) // 返回相对路径如 /uploads/xxx.jpg
+          } else {
+            reject(new Error(data.message || '上传失败'))
+          }
+        } catch (e) {
+          reject(new Error('解析上传响应失败'))
+        }
+      },
+      fail: reject
+    })
+  })
+}
+
+// 批量上传图片
+async function uploadImages(filePaths) {
+  const urls = []
+  for (const fp of filePaths) {
+    const url = await uploadImage(fp)
+    urls.push(url)
+  }
+  return urls
+}
+
 // 认证相关
 const auth = {
-  // 登录（首次登录，生成配对码）
-  login(nickName, loveDate, openId) {
-    return request('/auth/login', 'POST', { nickName, loveDate, openId })
+  // 登录（首次登录，生成配对码），内部调用 wx.login 获取 code
+  async login(nickName, loveDate) {
+    const code = await wxLogin()
+    return request('/auth/login', 'POST', { code, nickName, loveDate })
   },
-  // 接受配对
-  pair(nickName, pairingCode, loveDate, openId) {
-    return request('/auth/pair', 'POST', { nickName, pairingCode, loveDate, openId })
+  // 接受配对（被邀请方），内部调用 wx.login 获取 code
+  async pair(nickName, pairingCode, loveDate) {
+    const code = await wxLogin()
+    return request('/auth/pair', 'POST', { code, nickName, pairingCode, loveDate })
   },
   // 获取用户信息
   profile() {
@@ -95,5 +155,9 @@ module.exports = {
   menu,
   anniversary,
   period,
-  moment
+  moment,
+  wxLogin,
+  uploadImage,
+  uploadImages,
+  getFullUrl
 }
