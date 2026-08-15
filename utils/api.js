@@ -107,13 +107,16 @@ async function uploadImages(filePaths) {
 const auth = {
   // 登录（首次登录，生成配对码），内部调用 wx.login 获取 code
   async login(nickName, loveDate) {
+    const deviceId = getDeviceId()
     const code = await wxLogin()
-    return request('/auth/login', 'POST', { code, deviceId: getDeviceId(), nickName, loveDate })
+    // 拿不到微信 code 时用设备ID兜底，保证任何环境下都能登录测试
+    return request('/auth/login', 'POST', { code: code || deviceId, deviceId, nickName, loveDate })
   },
   // 接受配对（被邀请方），内部调用 wx.login 获取 code
   async pair(nickName, pairingCode, loveDate) {
+    const deviceId = getDeviceId()
     const code = await wxLogin()
-    return request('/auth/pair', 'POST', { code, deviceId: getDeviceId(), nickName, pairingCode, loveDate })
+    return request('/auth/pair', 'POST', { code: code || deviceId, deviceId, nickName, pairingCode, loveDate })
   },
   // 获取用户信息
   profile() {
