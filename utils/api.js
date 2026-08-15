@@ -51,6 +51,16 @@ function wxLogin() {
   })
 }
 
+// 稳定的设备标识（本地开发降级模式用：保证同一设备登录始终是同一身份）
+function getDeviceId() {
+  let id = wx.getStorageSync('deviceId')
+  if (!id) {
+    id = 'dev_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 8)
+    wx.setStorageSync('deviceId', id)
+  }
+  return id
+}
+
 // 获取完整图片URL（后端返回的是相对路径 /uploads/xxx.jpg）
 function getFullUrl(relativeUrl) {
   if (!relativeUrl) return ''
@@ -100,12 +110,12 @@ const auth = {
   // 登录（首次登录，生成配对码），内部调用 wx.login 获取 code
   async login(nickName, loveDate) {
     const code = await wxLogin()
-    return request('/auth/login', 'POST', { code, nickName, loveDate })
+    return request('/auth/login', 'POST', { code, deviceId: getDeviceId(), nickName, loveDate })
   },
   // 接受配对（被邀请方），内部调用 wx.login 获取 code
   async pair(nickName, pairingCode, loveDate) {
     const code = await wxLogin()
-    return request('/auth/pair', 'POST', { code, nickName, pairingCode, loveDate })
+    return request('/auth/pair', 'POST', { code, deviceId: getDeviceId(), nickName, pairingCode, loveDate })
   },
   // 获取用户信息
   profile() {

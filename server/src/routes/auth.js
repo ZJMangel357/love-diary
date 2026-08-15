@@ -23,15 +23,15 @@ function genToken(userId, coupleId) {
 }
 
 // 调用微信 code2Session 接口换取 openid
-// 失败时降级使用 code 作为临时 openId，便于本地开发测试
-async function code2Session(code) {
+// 失败时降级使用设备ID作为临时 openId，便于本地开发测试（同一设备身份稳定）
+async function code2Session(code, deviceId) {
   const appid = process.env.WX_APPID
   const secret = process.env.WX_SECRET
 
   // 没有配置 AppID/AppSecret，直接降级（本地开发）
   if (!appid || !secret) {
-    console.warn('[微信登录] 未配置 WX_APPID/WX_SECRET，使用 code 作为临时 openId')
-    return { openid: 'dev_' + code, session_key: '' }
+    console.warn('[微信登录] 未配置 WX_APPID/WX_SECRET，使用设备ID作为临时 openId')
+    return { openid: 'dev_' + (deviceId || code), session_key: '' }
   }
 
   try {
@@ -46,25 +46,25 @@ async function code2Session(code) {
     })
     if (data.errcode) {
       console.warn('[微信登录] code2Session 返回错误:', data.errcode, data.errmsg)
-      // 降级：用 code 作为临时 openId
-      return { openid: 'dev_' + code, session_key: '' }
+      // 降级：用设备ID作为临时 openId
+      return { openid: 'dev_' + (deviceId || code), session_key: '' }
     }
     return { openid: data.openid, session_key: data.session_key || '' }
   } catch (e) {
-    console.warn('[微信登录] code2Session 请求失败，降级使用 code 作为临时 openId:', e.message)
-    return { openid: 'dev_' + code, session_key: '' }
+    console.warn('[微信登录] code2Session 请求失败，降级使用设备ID作为临时 openId:', e.message)
+    return { openid: 'dev_' + (deviceId || code), session_key: '' }
   }
 }
 
 // 用户登录（首次登录 → 创建用户 + 生成配对码）
 router.post('/login', async (req, res) => {
-  const { code, nickName, loveDate } = req.body
+  const { code, deviceId, nickName, loveDate } = req.body
   if (!nickName) return res.json(fail('请输入昵称'))
   if (!code) return res.json(fail('缺少微信登录凭证 code'))
 
   try {
-    // 用 code 换取 openid
-    const { openid } = await code2Session(code)
+    // 用 code 换取 openid（未配置微信时降级使用设备ID）
+    const { openid } = await code2Session(code, deviceId)
     if (!openid) return res.json(fail('获取 openid 失败'))
 
     // 检查是否已有该 openId 用户
@@ -116,7 +116,7 @@ router.post('/login', async (req, res) => {
 
 // 接受配对（被邀请方登录 + 配对）
 router.post('/pair', async (req, res) => {
-  const { code, nickName, pairingCode, loveDate } = req.body
+  const { code, deviceId, nickName, pairingCode, loveDate } = req.body
   if (!nickName) return res.json(fail('请输入昵称'))
   if (!pairingCode) return res.json(fail('缺少配对码'))
   if (!code) return res.json(fail('缺少微信登录凭证 code'))
@@ -135,8 +135,8 @@ router.post('/pair', async (req, res) => {
 
     if (couple.partnered) return res.json(fail('该配对码已被使用'))
 
-    // 用 code 换取 openid
-    const { openid } = await code2Session(code)
+    // 用 code 换取 openid（未配置微信时降级使用设备ID）
+    const { openid } = await code2Session(code, deviceId)
     if (!openid) return res.json(fail('获取 openid 失败'))
 
     // 创建被邀请方用户
