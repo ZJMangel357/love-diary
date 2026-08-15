@@ -175,6 +175,14 @@
   flex-shrink: 0;
 }
 
+.dish-img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 28rpx;
+  background: #F5F5F5;
+  margin-bottom: 12rpx;
+}
+
 .dish-emoji-wrap {
   width: 160rpx;
   height: 160rpx;

@@ -1,6 +1,6 @@
 // pages/anniversary/anniversary.js
 const util = require('../../utils/util.js')
-const app = getApp()
+const api = require('../../utils/api.js')
 
 Page({
   data: {
@@ -29,42 +29,51 @@ Page({
     wx.stopPullDownRefresh()
   },
 
-  refreshData() {
-    const anniversaries = wx.getStorageSync('anniversaries') || []
-    const nowStr = util.formatDate(new Date(), 'YYYY-MM-DD')
-    
-    const decorated = anniversaries.map(a => {
-      const isYearly = a.repeat === 'yearly'
-      const displayDate = isYearly ? util.getAnniversaryThisYear(a.date) : a.date
-      const daysTo = util.getDaysToAnniversary(a.date, a.repeat)
-      const totalDays = Math.abs(util.getDaysBetween(a.date, nowStr))
-      
-      // 计算经过的周年数
-      let yearsPassed = 0
-      if (isYearly) {
-        const start = new Date(a.date.replace(/-/g, '/'))
-        yearsPassed = new Date().getFullYear() - start.getFullYear()
+  async refreshData() {
+    try {
+      const res = await api.anniversary.list()
+      if (res.code !== 0) {
+        wx.showToast({ title: res.message || '加载失败', icon: 'none' })
+        return
       }
-      
-      return {
-        ...a,
-        displayDate,
-        daysTo,
-        totalDays,
-        yearsPassed,
-        isPast: daysTo < 0
-      }
-    })
-    .sort((a, b) => {
-      // 优先显示还没到的
-      if (a.daysTo >= 0 && b.daysTo < 0) return -1
-      if (a.daysTo < 0 && b.daysTo >= 0) return 1
-      return Math.abs(a.daysTo) - Math.abs(b.daysTo)
-    })
+      const anniversaries = res.data || []
+      const nowStr = util.formatDate(new Date(), 'YYYY-MM-DD')
 
-    this.setData({ anniversaries: decorated }, () => {
-      this.applyFilter()
-    })
+      const decorated = anniversaries.map(a => {
+        const isYearly = a.repeat === 'yearly'
+        const displayDate = isYearly ? util.getAnniversaryThisYear(a.date) : a.date
+        const daysTo = util.getDaysToAnniversary(a.date, a.repeat)
+        const totalDays = Math.abs(util.getDaysBetween(a.date, nowStr))
+
+        // 计算经过的周年数
+        let yearsPassed = 0
+        if (isYearly) {
+          const start = new Date(a.date.replace(/-/g, '/'))
+          yearsPassed = new Date().getFullYear() - start.getFullYear()
+        }
+
+        return {
+          ...a,
+          displayDate,
+          daysTo,
+          totalDays,
+          yearsPassed,
+          isPast: daysTo < 0
+        }
+      })
+      .sort((a, b) => {
+        // 优先显示还没到的
+        if (a.daysTo >= 0 && b.daysTo < 0) return -1
+        if (a.daysTo < 0 && b.daysTo >= 0) return 1
+        return Math.abs(a.daysTo) - Math.abs(b.daysTo)
+      })
+
+      this.setData({ anniversaries: decorated }, () => {
+        this.applyFilter()
+      })
+    } catch (e) {
+      wx.showToast({ title: '网络错误，请检查后端服务', icon: 'none' })
+    }
   },
 
   switchFilter(e) {
@@ -97,14 +106,19 @@ Page({
       title: '删除纪念日',
       content: '确定要删除这个纪念日吗？',
       confirmColor: '#FF6B9D',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          const list = this.data.anniversaries.filter(a => a.id !== id)
-          // 去掉装饰字段再存
-          const toStore = list.map(({ displayDate, daysTo, totalDays, yearsPassed, isPast, ...rest }) => rest)
-          wx.setStorageSync('anniversaries', toStore)
-          wx.showToast({ title: '已删除', icon: 'success' })
-          this.refreshData()
+          try {
+            const r = await api.anniversary.remove(id)
+            if (r.code === 0) {
+              wx.showToast({ title: '已删除', icon: 'success' })
+              this.refreshData()
+            } else {
+              wx.showToast({ title: r.message || '删除失败', icon: 'none' })
+            }
+          } catch (e) {
+            wx.showToast({ title: '网络错误', icon: 'none' })
+          }
         }
       }
     })

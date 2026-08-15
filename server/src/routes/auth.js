@@ -205,4 +205,28 @@ router.get('/profile', async (req, res) => {
   }
 })
 
+// 更新用户资料（昵称 / 恋爱纪念日）
+router.put('/profile', async (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '')
+  if (!token) return res.json(fail('未登录', 401))
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'love-diary-secret-key-2024')
+    const { nickName, loveDate } = req.body
+
+    if (nickName && nickName.trim()) {
+      await pool.query('UPDATE users SET nick_name = ? WHERE id = ?', [nickName.trim(), decoded.userId])
+    }
+    if (loveDate) {
+      await pool.query(
+        'UPDATE couples SET love_date = ? WHERE user1_id = ? OR user2_id = ?',
+        [loveDate, decoded.userId, decoded.userId]
+      )
+    }
+
+    res.json(success(null, '更新成功'))
+  } catch (e) {
+    res.json(fail('登录已过期', 401))
+  }
+})
+
 module.exports = router

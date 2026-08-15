@@ -467,6 +467,15 @@
   flex-shrink: 0;
 }
 
+.menu-dish-img {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 28rpx;
+  background: #F5F5F5;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
 .menu-dish-info {
   flex: 1;
   min-width: 0;
@@ -647,6 +656,14 @@
 .moment-mood {
   font-size: 52rpx;
   margin-bottom: 12rpx;
+}
+
+.moment-cover {
+  width: 100%;
+  height: 220rpx;
+  border-radius: 20rpx;
+  margin-bottom: 12rpx;
+  background: #F5F5F5;
 }
 
 .moment-title {

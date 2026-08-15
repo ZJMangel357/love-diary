@@ -137,25 +137,26 @@ Page({
 
       if (this.data.isEdit) {
         const res = await api.moment.update(this.data.editId, payload)
+        wx.hideLoading()
         if (res.code === 0) {
           wx.showToast({ title: '修改成功 ✅', icon: 'success' })
         } else {
           wx.showToast({ title: res.message || '修改失败', icon: 'none' })
           this.setData({ saving: false })
-          wx.hideLoading()
           return
         }
       } else {
         const res = await api.moment.add(payload)
+        wx.hideLoading()
         if (res.code === 0) {
           wx.showToast({ title: '记录成功 💖', icon: 'success' })
         } else {
           wx.showToast({ title: res.message || '保存失败', icon: 'none' })
           this.setData({ saving: false })
-          wx.hideLoading()
           return
         }
       }
+      this.setData({ saving: false })
       setTimeout(() => wx.navigateBack(), 800)
     } catch (e) {
       wx.hideLoading()

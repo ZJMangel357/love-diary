@@ -16,6 +16,7 @@ Page({
     creator: '她',
     creators: ['他', '她', '一起'],
     image: '',
+    favorite: false,
     presetTags: ['快手', '下饭', '硬菜', '健康', '聚会', '夜宵', '早餐', '甜点', '辣', '清淡', '汤品', '约会'],
     selectedPreset: []
   },
@@ -42,6 +43,7 @@ Page({
               selectedPreset: menu.tags || [],
               difficulty: menu.difficulty || 1,
               creator: menu.creator || '她',
+              favorite: menu.favorite || false,
               image
             })
             wx.setNavigationBarTitle({ title: '编辑菜品' })
@@ -162,25 +164,25 @@ Page({
         difficulty: this.data.difficulty,
         creator: this.data.creator,
         image: imageUrl,
-        favorite: false
+        favorite: this.data.favorite || false
       }
 
       if (this.data.isEdit) {
         const res = await api.menu.update(this.data.editId, payload)
+        wx.hideLoading()
         if (res.code === 0) {
           wx.showToast({ title: '修改成功 ✅', icon: 'success' })
         } else {
           wx.showToast({ title: res.message || '修改失败', icon: 'none' })
-          wx.hideLoading()
           return
         }
       } else {
         const res = await api.menu.add(payload)
+        wx.hideLoading()
         if (res.code === 0) {
           wx.showToast({ title: '添加成功 🎉', icon: 'success' })
         } else {
           wx.showToast({ title: res.message || '添加失败', icon: 'none' })
-          wx.hideLoading()
           return
         }
       }

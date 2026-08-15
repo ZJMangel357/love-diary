@@ -49,7 +49,8 @@
       <view class="dish-card animate-slide-up" wx:for="{{filteredMenus}}" wx:key="id"
             style="animation-delay: {{index % 6 * 0.05}}s;">
         <view class="dish-visual">
-          <view class="dish-emoji-wrap">
+          <image wx:if="{{item.image}}" class="dish-img" src="{{item.image}}" mode="aspectFill" />
+          <view class="dish-emoji-wrap" wx:else>
             <text class="dish-emoji">🍽️</text>
           </view>
           <view class="dish-difficulty">{{item.difficultyStars}}</view>

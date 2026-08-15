@@ -1,6 +1,6 @@
 // pages/moments/moments.js
 const util = require('../../utils/util.js')
-const app = getApp()
+const api = require('../../utils/api.js')
 
 Page({
   data: {
@@ -25,31 +25,48 @@ Page({
     wx.stopPullDownRefresh()
   },
 
-  refreshData() {
-    const moments = wx.getStorageSync('moments') || []
-    const sorted = moments
-      .map(m => ({
-        ...m,
-        dateObj: new Date(m.date.replace(/-/g, '/')),
-        relativeTime: util.getRelativeTime(m.date)
-      }))
-      .sort((a, b) => b.dateObj - a.dateObj)
+  async refreshData() {
+    try {
+      const res = await api.moment.list()
+      if (res.code !== 0) {
+        wx.showToast({ title: res.message || '加载失败', icon: 'none' })
+        return
+      }
+      const moments = (res.data || []).map(m => {
+        // 兼容 images 为 JSON 字符串或数组的情况，并转为完整URL用于展示
+        let images = m.images || []
+        if (typeof images === 'string') {
+          try { images = JSON.parse(images) } catch (e) { images = [] }
+        }
+        images = images.map(url => api.getFullUrl(url))
+        return {
+          ...m,
+          images,
+          coverImage: images.length > 0 ? images[0] : '',
+          dateObj: new Date(m.date.replace(/-/g, '/')),
+          relativeTime: util.getRelativeTime(m.date)
+        }
+      })
+      const sorted = moments.sort((a, b) => b.dateObj - a.dateObj)
 
-    // 生成年份选项
-    const years = new Set(['all'])
-    sorted.forEach(m => years.add(String(m.dateObj.getFullYear())))
-    const yearOptions = Array.from(years)
+      // 生成年份选项
+      const years = new Set(['all'])
+      sorted.forEach(m => years.add(String(m.dateObj.getFullYear())))
+      const yearOptions = Array.from(years)
 
-    const viewCount = wx.getStorageSync('momentsViewCount') || 0
-    wx.setStorageSync('momentsViewCount', viewCount + 1)
+      const viewCount = (wx.getStorageSync('momentsViewCount') || 0) + 1
+      wx.setStorageSync('momentsViewCount', viewCount)
 
-    this.setData({
-      moments: sorted,
-      yearOptions,
-      viewCount: viewCount + 1
-    }, () => {
-      this.applyFilter()
-    })
+      this.setData({
+        moments: sorted,
+        yearOptions,
+        viewCount
+      }, () => {
+        this.applyFilter()
+      })
+    } catch (e) {
+      wx.showToast({ title: '网络错误，请检查后端服务', icon: 'none' })
+    }
   },
 
   switchView() {
@@ -70,7 +87,7 @@ Page({
     if (this.data.selectedYear !== 'all') {
       list = list.filter(m => String(m.dateObj.getFullYear()) === this.data.selectedYear)
     }
-    
+
     // 按月份分组（timeline模式）
     if (this.data.viewMode === 'timeline') {
       const groups = {}
@@ -107,15 +124,31 @@ Page({
       title: '删除记录',
       content: '确定要删除这条美好回忆吗？',
       confirmColor: '#FF6B9D',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          const list = wx.getStorageSync('moments') || []
-          const filtered = list.filter(m => m.id !== id)
-          wx.setStorageSync('moments', filtered)
-          wx.showToast({ title: '已删除', icon: 'success' })
-          this.refreshData()
+          try {
+            const r = await api.moment.remove(id)
+            if (r.code === 0) {
+              wx.showToast({ title: '已删除', icon: 'success' })
+              this.refreshData()
+            } else {
+              wx.showToast({ title: r.message || '删除失败', icon: 'none' })
+            }
+          } catch (e) {
+            wx.showToast({ title: '网络错误', icon: 'none' })
+          }
         }
       }
+    })
+  },
+
+  // 预览图片
+  previewImages(e) {
+    const { urls, current } = e.currentTarget.dataset
+    if (!urls || urls.length === 0) return
+    wx.previewImage({
+      current: current || urls[0],
+      urls
     })
   },
 
@@ -123,7 +156,7 @@ Page({
     const { id } = e.currentTarget.dataset
     const moment = this.data.moments.find(m => m.id === id)
     if (!moment) return
-    
+
     wx.showActionSheet({
       itemList: ['查看详情', '编辑', '删除'],
       success: (res) => {

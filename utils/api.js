@@ -110,6 +110,10 @@ const auth = {
   // 获取用户信息
   profile() {
     return request('/auth/profile', 'GET')
+  },
+  // 更新用户资料（昵称/恋爱纪念日）
+  updateProfile(data) {
+    return request('/auth/profile', 'PUT', data)
   }
 }
 
@@ -147,6 +151,70 @@ const moment = {
   remove(id) { return request('/moments/' + id, 'DELETE') }
 }
 
+// 一次性迁移本地存储的历史数据到后端（旧版本地存储模式升级用）
+async function migrateLocalData() {
+  try {
+    const [menuRes, annivRes, momentRes, periodRes] = await Promise.all([
+      menu.list(),
+      anniversary.list(),
+      moment.list(),
+      period.records()
+    ])
+
+    // 菜品（后端为空时才迁移，避免重复）
+    const localMenus = wx.getStorageSync('menus') || []
+    if (localMenus.length > 0 && menuRes.code === 0 && (menuRes.data || []).length === 0) {
+      for (const m of localMenus) {
+        try {
+          await menu.add({ name: m.name, category: m.category, tags: m.tags || [], difficulty: m.difficulty || 1, image: m.image || '', creator: m.creator || '', favorite: !!m.favorite })
+        } catch (e) { console.error('迁移菜品失败', m.name, e) }
+      }
+    }
+
+    // 纪念日
+    const localAnniv = wx.getStorageSync('anniversaries') || []
+    if (localAnniv.length > 0 && annivRes.code === 0 && (annivRes.data || []).length === 0) {
+      for (const a of localAnniv) {
+        try {
+          await anniversary.add({ title: a.title, date: a.date, type: a.type || 'other', repeat: a.repeat || 'yearly', emoji: a.emoji || '💝', important: !!a.important })
+        } catch (e) { console.error('迁移纪念日失败', a.title, e) }
+      }
+    }
+
+    // 时光
+    const localMoments = wx.getStorageSync('moments') || []
+    if (localMoments.length > 0 && momentRes.code === 0 && (momentRes.data || []).length === 0) {
+      for (const mo of localMoments) {
+        try {
+          await moment.add({ title: mo.title, content: mo.content || '', date: mo.date, images: mo.images || [], mood: mo.mood || '💕', location: mo.location || '' })
+        } catch (e) { console.error('迁移时光失败', mo.title, e) }
+      }
+    }
+
+    // 经期记录与配置
+    const localPeriods = wx.getStorageSync('periods') || { records: [], cycleLength: 28, periodLength: 5 }
+    if ((localPeriods.records || []).length > 0 && periodRes.code === 0 && (periodRes.data || []).length === 0) {
+      for (const p of localPeriods.records) {
+        try {
+          await period.addRecord({ startDate: p.startDate, note: p.note || '', symptoms: p.symptoms || [], flowLevel: p.flowLevel || 2 })
+        } catch (e) { console.error('迁移经期记录失败', p.startDate, e) }
+      }
+    }
+    try {
+      await period.updateConfig({ cycleLength: localPeriods.cycleLength || 28, periodLength: localPeriods.periodLength || 5 })
+    } catch (e) { console.error('迁移经期配置失败', e) }
+
+    // 迁移完成后清理本地数据
+    wx.removeStorageSync('menus')
+    wx.removeStorageSync('anniversaries')
+    wx.removeStorageSync('moments')
+    wx.removeStorageSync('periods')
+    wx.removeStorageSync('todayMenu')
+  } catch (e) {
+    console.error('本地数据迁移失败', e)
+  }
+}
+
 module.exports = {
   BASE_URL,
   getToken,
@@ -159,5 +227,6 @@ module.exports = {
   wxLogin,
   uploadImage,
   uploadImages,
-  getFullUrl
+  getFullUrl,
+  migrateLocalData
 }

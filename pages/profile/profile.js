@@ -1,5 +1,6 @@
 // pages/profile/profile.js
 const util = require('../../utils/util.js')
+const api = require('../../utils/api.js')
 const app = getApp()
 
 Page({
@@ -29,75 +30,99 @@ Page({
     this.refreshData()
   },
 
-  refreshData() {
-    const coupleInfo = wx.getStorageSync('coupleInfo') || {}
-    const userInfo = wx.getStorageSync('userInfo') || null
-    const themeInfo = wx.getStorageSync('themeInfo')
+  async refreshData() {
+    try {
+      const [profileRes, menusRes, annivRes, momentRes, periodRes] = await Promise.all([
+        api.auth.profile(),
+        api.menu.list(),
+        api.anniversary.list(),
+        api.moment.list(),
+        api.period.records()
+      ])
 
-    let currentTheme = 0
-    if (themeInfo) {
-      const idx = this.data.themeOptions.findIndex(t => t.name === themeInfo.themeName)
-      if (idx >= 0) currentTheme = idx
+      let coupleInfo = {}
+      let userInfo = null
+      let isPartnered = false
+      if (profileRes.code === 0 && profileRes.data) {
+        const d = profileRes.data
+        userInfo = d
+        isPartnered = !!d.partnered
+        const partnerName1 = d.nickName || '我'
+        const partnerName2 = d.partnered ? (d.partnerName || 'TA') : '她'
+        coupleInfo = {
+          partnerName1,
+          partnerName2,
+          avatarText1: partnerName1.charAt(0),
+          avatarText2: partnerName2.charAt(0),
+          loveDate: d.loveDate || '',
+          partnered: isPartnered,
+          pairingCode: d.pairingCode
+        }
+        wx.setStorageSync('userInfo', d)
+      }
+
+      const themeInfo = wx.getStorageSync('themeInfo')
+      let currentTheme = 0
+      if (themeInfo) {
+        const idx = this.data.themeOptions.findIndex(t => t.name === themeInfo.themeName)
+        if (idx >= 0) currentTheme = idx
+      }
+
+      const dataStats = {
+        menus: menusRes.code === 0 ? (menusRes.data || []).length : 0,
+        anniversaries: annivRes.code === 0 ? (annivRes.data || []).length : 0,
+        moments: momentRes.code === 0 ? (momentRes.data || []).length : 0,
+        periods: periodRes.code === 0 ? (periodRes.data || []).length : 0
+      }
+
+      const loveDays = coupleInfo.loveDate
+        ? util.getDaysBetween(coupleInfo.loveDate, util.formatDate(new Date(), 'YYYY-MM-DD'))
+        : 0
+
+      this.setData({
+        coupleInfo,
+        userInfo,
+        currentTheme,
+        dataStats,
+        loveDays,
+        isPartnered
+      })
+    } catch (e) {
+      console.error('加载个人中心失败', e)
+      wx.showToast({ title: '网络错误，请检查后端服务', icon: 'none' })
     }
-
-    const dataStats = {
-      menus: (wx.getStorageSync('menus') || []).length,
-      anniversaries: (wx.getStorageSync('anniversaries') || []).length,
-      moments: (wx.getStorageSync('moments') || []).length,
-      periods: (wx.getStorageSync('periods') || { records: [] }).records.length
-    }
-
-    const loveDays = coupleInfo.loveDate
-      ? util.getDaysBetween(coupleInfo.loveDate, util.formatDate(new Date(), 'YYYY-MM-DD'))
-      : 0
-
-    this.setData({
-      coupleInfo,
-      userInfo,
-      currentTheme,
-      dataStats,
-      loveDays,
-      isPartnered: !!(coupleInfo && coupleInfo.partnered)
-    })
   },
 
-  // 编辑情侣昵称
+  // 编辑我的昵称
   editCouple() {
+    const self = this.data.coupleInfo
     wx.showModal({
-      title: '设置情侣昵称',
+      title: '修改我的昵称',
       editable: true,
-      placeholderText: `他:${this.data.coupleInfo.partnerName1},她:${this.data.coupleInfo.partnerName2} （用逗号分隔）`,
+      placeholderText: self.partnerName1 || '输入新昵称',
       confirmColor: '#FF6B9D',
-      success: (res) => {
-        if (res.confirm && res.content) {
-          const parts = res.content.split(/[,，]/).map(s => s.trim())
-          const coupleInfo = { ...this.data.coupleInfo }
-          if (parts[0]) coupleInfo.partnerName1 = parts[0]
-          if (parts[1]) coupleInfo.partnerName2 = parts[1]
-          wx.setStorageSync('coupleInfo', coupleInfo)
-          wx.showToast({ title: '昵称已更新 💖', icon: 'none' })
-          this.refreshData()
+      success: async (res) => {
+        if (res.confirm && res.content && res.content.trim()) {
+          try {
+            const r = await api.auth.updateProfile({ nickName: res.content.trim() })
+            if (r.code === 0) {
+              wx.showToast({ title: '昵称已更新 💖', icon: 'none' })
+              this.refreshData()
+            } else {
+              wx.showToast({ title: r.message || '更新失败', icon: 'none' })
+            }
+          } catch (e) {
+            wx.showToast({ title: '网络错误', icon: 'none' })
+          }
         }
       }
     })
   },
 
-  // 设置恋爱纪念日
+  // 设置恋爱纪念日（同步到后端）
   setLoveDate() {
-    wx.showActionSheet({
-      itemList: ['选择日期', '清除设置'],
-      success: (res) => {
-        if (res.tapIndex === 0) {
-          wx.navigateTo({
-            url: '/pages/anniversary-add/anniversary-add?from=loveDate'
-          })
-        } else if (res.tapIndex === 1) {
-          const coupleInfo = { ...this.data.coupleInfo, loveDate: '2023-05-20' }
-          wx.setStorageSync('coupleInfo', coupleInfo)
-          wx.showToast({ title: '已重置', icon: 'success' })
-          this.refreshData()
-        }
-      }
+    wx.navigateTo({
+      url: '/pages/anniversary-add/anniversary-add?from=loveDate'
     })
   },
 
@@ -127,89 +152,86 @@ Page({
     })
   },
 
-  // 导出数据
-  exportData() {
-    const data = {
-      coupleInfo: wx.getStorageSync('coupleInfo') || {},
-      themeInfo: wx.getStorageSync('themeInfo') || {},
-      menus: wx.getStorageSync('menus') || [],
-      anniversaries: wx.getStorageSync('anniversaries') || [],
-      moments: wx.getStorageSync('moments') || [],
-      periods: wx.getStorageSync('periods') || { records: [] },
-      todayMenu: wx.getStorageSync('todayMenu') || null,
-      exportTime: new Date().toISOString()
+  // 导出数据（从后端拉取所有数据备份）
+  async exportData() {
+    wx.showLoading({ title: '正在导出...' })
+    try {
+      const [mRes, aRes, moRes, pRes] = await Promise.all([
+        api.menu.list(),
+        api.anniversary.list(),
+        api.moment.list(),
+        api.period.records()
+      ])
+      const data = {
+        menus: mRes.data || [],
+        anniversaries: aRes.data || [],
+        moments: moRes.data || [],
+        periods: pRes.data || [],
+        exportTime: new Date().toISOString()
+      }
+      wx.hideLoading()
+      const jsonStr = JSON.stringify(data, null, 2)
+      wx.setClipboardData({
+        data: jsonStr,
+        success: () => {
+          wx.showModal({
+            title: '✅ 数据已复制',
+            content: '所有数据已复制到剪贴板，可以粘贴保存到备忘录哦~',
+            showCancel: false,
+            confirmColor: '#5CC9A5'
+          })
+        }
+      })
+    } catch (e) {
+      wx.hideLoading()
+      wx.showToast({ title: '导出失败', icon: 'none' })
     }
-    const jsonStr = JSON.stringify(data, null, 2)
-    
-    wx.setClipboardData({
-      data: jsonStr,
-      success: () => {
+  },
+
+  // 重置所有数据（清空后端各类数据）
+  resetAll() {
+    wx.showModal({
+      title: '⚠️ 重置所有数据',
+      content: '将删除所有菜品、纪念日、时光和经期记录，且不可恢复！建议先导出备份！',
+      confirmText: '确认清除',
+      confirmColor: '#FF6B9D',
+      cancelColor: '#8A7F8A',
+      success: (res) => {
+        if (!res.confirm) return
         wx.showModal({
-          title: '✅ 数据已复制',
-          content: '所有数据已复制到剪贴板，可以粘贴保存到备忘录哦~',
-          showCancel: false,
-          confirmColor: '#5CC9A5'
+          title: '再次确认',
+          content: '真的真的要清除所有数据吗？',
+          confirmColor: '#FF6B9D',
+          success: (res2) => {
+            if (res2.confirm) this.doResetAll()
+          }
         })
       }
     })
   },
 
-  // 导入数据
-  importData() {
-    wx.showModal({
-      title: '📥 导入数据',
-      content: '将之前复制的数据粘贴到输入框中，导入后将覆盖现有数据',
-      editable: true,
-      placeholderText: '粘贴JSON数据...',
-      confirmColor: '#5CC9A5',
-      success: (res) => {
-        if (res.confirm && res.content) {
-          try {
-            const data = JSON.parse(res.content)
-            if (data.coupleInfo) wx.setStorageSync('coupleInfo', data.coupleInfo)
-            if (data.themeInfo) wx.setStorageSync('themeInfo', data.themeInfo)
-            if (data.menus) wx.setStorageSync('menus', data.menus)
-            if (data.anniversaries) wx.setStorageSync('anniversaries', data.anniversaries)
-            if (data.moments) wx.setStorageSync('moments', data.moments)
-            if (data.periods) wx.setStorageSync('periods', data.periods)
-            if (data.todayMenu) wx.setStorageSync('todayMenu', data.todayMenu)
-            wx.showToast({ title: '导入成功 🎉', icon: 'success' })
-            this.refreshData()
-          } catch (e) {
-            wx.showToast({ title: '数据格式错误', icon: 'none' })
-          }
-        }
-      }
-    })
-  },
-
-  // 重置所有数据
-  resetAll() {
-    wx.showModal({
-      title: '⚠️ 重置所有数据',
-      content: '确定要清除所有数据吗？此操作不可恢复，建议先导出备份！',
-      confirmText: '确认清除',
-      confirmColor: '#FF6B9D',
-      cancelColor: '#8A7F8A',
-      success: (res) => {
-        if (res.confirm) {
-          wx.showModal({
-            title: '再次确认',
-            content: '真的真的要清除所有数据吗？',
-            confirmColor: '#FF6B9D',
-            success: (res2) => {
-              if (res2.confirm) {
-                wx.clearStorageSync()
-                app.globalData.initDefaultData()
-                wx.setStorageSync('initialized', true)
-                wx.showToast({ title: '已重置', icon: 'success' })
-                this.refreshData()
-              }
-            }
-          })
-        }
-      }
-    })
+  async doResetAll() {
+    wx.showLoading({ title: '清除中...' })
+    try {
+      const [mRes, aRes, moRes, pRes] = await Promise.all([
+        api.menu.list(),
+        api.anniversary.list(),
+        api.moment.list(),
+        api.period.records()
+      ])
+      const tasks = []
+      ;(mRes.data || []).forEach(i => tasks.push(api.menu.remove(i.id)))
+      ;(aRes.data || []).forEach(i => tasks.push(api.anniversary.remove(i.id)))
+      ;(moRes.data || []).forEach(i => tasks.push(api.moment.remove(i.id)))
+      ;(pRes.data || []).forEach(i => tasks.push(api.period.removeRecord(i.id)))
+      await Promise.all(tasks)
+      wx.hideLoading()
+      wx.showToast({ title: '已重置', icon: 'success' })
+      this.refreshData()
+    } catch (e) {
+      wx.hideLoading()
+      wx.showToast({ title: '重置失败', icon: 'none' })
+    }
   },
 
   // 关于
@@ -246,8 +268,9 @@ Page({
       confirmColor: '#FF6B9D',
       success: (res) => {
         if (res.confirm) {
+          wx.removeStorageSync('token')
           wx.removeStorageSync('userInfo')
-          wx.removeStorageSync('coupleInfo')
+          wx.removeStorageSync('singleMode')
           app.globalData.userInfo = null
           app.globalData.coupleInfo = null
           wx.reLaunch({ url: '/pages/login/login' })

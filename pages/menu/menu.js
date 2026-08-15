@@ -102,9 +102,10 @@ Page({
         break
     }
 
-    // 预计算难度星级（WXML 不支持 .repeat()）
+    // 预计算难度星级 + 图片完整URL（WXML 不支持 .repeat()）
     list = list.map(m => ({
       ...m,
+      image: m.image ? api.getFullUrl(m.image) : '',
       difficultyStars: '⭐'.repeat(m.difficulty || 1) + '☆'.repeat(Math.max(0, 3 - (m.difficulty || 1)))
     }))
 

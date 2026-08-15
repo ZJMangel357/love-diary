@@ -1,6 +1,6 @@
 // pages/period/period.js
 const util = require('../../utils/util.js')
-const app = getApp()
+const api = require('../../utils/api.js')
 
 Page({
   data: {
@@ -41,47 +41,68 @@ Page({
     this.refreshData()
   },
 
-  refreshData() {
-    const periods = wx.getStorageSync('periods') || { records: [], cycleLength: 28, periodLength: 5 }
-    let currentPhase = null
-    let nextStart = ''
-    let ovulationDate = ''
-    let ovulationStart = ''
-    let ovulationEnd = ''
-    let daysToNext = 0
-    let currentTips = this.data.healthTips.filter(t => t.phase === 'luteal' || t.phase === 'follicular')
+  async refreshData() {
+    try {
+      const [configRes, recordsRes] = await Promise.all([
+        api.period.getConfig(),
+        api.period.records()
+      ])
 
-    if (periods.records.length > 0) {
-      const lastRecord = periods.records[periods.records.length - 1]
-      currentPhase = util.periodUtils.getCurrentPhase(lastRecord.startDate, periods.cycleLength, periods.periodLength)
-      nextStart = util.periodUtils.getNextPeriodStart(lastRecord.startDate, periods.cycleLength)
-      ovulationDate = util.periodUtils.getOvulationDate(nextStart)
-      const ovuPeriod = util.periodUtils.getOvulationPeriod(lastRecord.startDate, periods.cycleLength)
-      ovulationStart = ovuPeriod.start
-      ovulationEnd = ovuPeriod.end
-      daysToNext = util.getDaysBetween(util.formatDate(new Date(), 'YYYY-MM-DD'), nextStart)
-      
-      // 获取对应阶段的建议
-      currentTips = this.data.healthTips.filter(t => t.phase === currentPhase.phase)
-      if (currentTips.length === 0) {
-        currentTips = this.data.healthTips.filter(t => t.phase === currentPhase.phase === 'period' ? 'period' : 'luteal')
+      // 后端返回的字段是 snake_case，转成前端 camelCase
+      const cfg = configRes.code === 0 ? (configRes.data || {}) : {}
+      const rawRecords = recordsRes.code === 0 ? (recordsRes.data || []) : []
+      const periods = {
+        records: rawRecords.map(r => ({
+          ...r,
+          startDate: r.start_date,
+          flowLevel: r.flow_level
+        })),
+        cycleLength: cfg.cycle_length || 28,
+        periodLength: cfg.period_length || 5
       }
+
+      let currentPhase = null
+      let nextStart = ''
+      let ovulationDate = ''
+      let ovulationStart = ''
+      let ovulationEnd = ''
+      let daysToNext = 0
+      let currentTips = this.data.healthTips.filter(t => t.phase === 'luteal' || t.phase === 'follicular')
+
+      if (periods.records.length > 0) {
+        const lastRecord = periods.records[periods.records.length - 1]
+        currentPhase = util.periodUtils.getCurrentPhase(lastRecord.startDate, periods.cycleLength, periods.periodLength)
+        nextStart = util.periodUtils.getNextPeriodStart(lastRecord.startDate, periods.cycleLength)
+        ovulationDate = util.periodUtils.getOvulationDate(nextStart)
+        const ovuPeriod = util.periodUtils.getOvulationPeriod(lastRecord.startDate, periods.cycleLength)
+        ovulationStart = ovuPeriod.start
+        ovulationEnd = ovuPeriod.end
+        daysToNext = util.getDaysBetween(util.formatDate(new Date(), 'YYYY-MM-DD'), nextStart)
+
+        // 获取对应阶段的建议
+        currentTips = this.data.healthTips.filter(t => t.phase === currentPhase.phase)
+        if (currentTips.length === 0) {
+          currentTips = this.data.healthTips.filter(t => t.phase === 'luteal')
+        }
+      }
+
+      // 生成日历
+      const monthCalendar = this.generateCalendar(periods, nextStart, ovulationDate, ovulationStart, ovulationEnd)
+
+      this.setData({
+        periods,
+        currentPhase,
+        nextStart,
+        ovulationDate,
+        ovulationStart,
+        ovulationEnd,
+        daysToNext,
+        monthCalendar,
+        currentTips
+      })
+    } catch (e) {
+      wx.showToast({ title: '网络错误，请检查后端服务', icon: 'none' })
     }
-
-    // 生成日历
-    const monthCalendar = this.generateCalendar(periods, nextStart, ovulationDate, ovulationStart, ovulationEnd)
-
-    this.setData({
-      periods,
-      currentPhase,
-      nextStart,
-      ovulationDate,
-      ovulationStart,
-      ovulationEnd,
-      daysToNext,
-      monthCalendar,
-      currentTips
-    })
   },
 
   generateCalendar(periods, nextStart, ovulationDate, ovuStart, ovuEnd) {
@@ -107,28 +128,33 @@ Page({
     })
 
     // 下次经期
-    const nextStartDate = new Date(nextStart.replace(/-/g, '/'))
-    if (nextStartDate.getMonth() === month && nextStartDate.getFullYear() === year) {
-      for (let i = 0; i < periods.periodLength; i++) {
-        const d = new Date(nextStartDate)
-        d.setDate(d.getDate() + i)
-        if (d.getMonth() === month) {
-          periodDays.add(d.getDate()) // 用负数或标记区分
+    if (nextStart) {
+      const nextStartDate = new Date(nextStart.replace(/-/g, '/'))
+      if (nextStartDate.getMonth() === month && nextStartDate.getFullYear() === year) {
+        for (let i = 0; i < periods.periodLength; i++) {
+          const d = new Date(nextStartDate)
+          d.setDate(d.getDate() + i)
+          if (d.getMonth() === month) {
+            periodDays.add(d.getDate()) // 用负数或标记区分
+          }
         }
       }
     }
 
     // 排卵期
     const ovuSet = new Set()
-    const ovuS = new Date(ovuStart.replace(/-/g, '/'))
-    const ovuE = new Date(ovuEnd.replace(/-/g, '/'))
-    const ovuD = new Date(ovulationDate.replace(/-/g, '/'))
-    for (let d = new Date(ovuS); d <= ovuE; d.setDate(d.getDate() + 1)) {
-      if (d.getMonth() === month && d.getFullYear() === year) {
-        ovuSet.add(d.getDate())
+    let ovuDay = -1
+    if (ovuStart && ovuEnd) {
+      const ovuS = new Date(ovuStart.replace(/-/g, '/'))
+      const ovuE = new Date(ovuEnd.replace(/-/g, '/'))
+      const ovuD = new Date(ovulationDate.replace(/-/g, '/'))
+      for (let d = new Date(ovuS); d <= ovuE; d.setDate(d.getDate() + 1)) {
+        if (d.getMonth() === month && d.getFullYear() === year) {
+          ovuSet.add(d.getDate())
+        }
       }
+      ovuDay = ovuD.getMonth() === month && ovuD.getFullYear() === year ? ovuD.getDate() : -1
     }
-    const ovuDay = ovuD.getMonth() === month && ovuD.getFullYear() === year ? ovuD.getDate() : -1
 
     // 今天
     const today = now.getDate()
@@ -140,10 +166,12 @@ Page({
     }
     for (let d = 1; d <= totalDays; d++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+      const isRecorded = periodDays.has(d)
+      const isFuture = new Date(dateStr.replace(/-/g, '/')) > now
       days.push({
         day: d,
-        isPeriod: periodDays.has(d) && (d <= today || this.isFuturePeriod(d, nextStartDate)),
-        isPredicted: new Date(dateStr.replace(/-/g, '/')) > now && periodDays.has(d),
+        isPeriod: isRecorded && !isFuture,
+        isPredicted: isRecorded && isFuture,
         isOvu: ovuSet.has(d),
         isOvulation: d === ovuDay,
         isToday: d === today
@@ -157,49 +185,63 @@ Page({
     }
   },
 
-  isFuturePeriod(day, nextStartDate) {
-    // 判断是否是预测的未来经期
-    const now = new Date()
-    now.setHours(0, 0, 0, 0)
-    const d = new Date(now.getFullYear(), now.getMonth(), day)
-    return d > now
-  },
-
   goRecord() {
     wx.navigateTo({ url: '/pages/period-record/period-record' })
   },
 
-  recordToday() {
+  async recordToday() {
     const today = util.formatDate(new Date(), 'YYYY-MM-DD')
-    const periods = this.data.periods
-    const newRecord = {
-      id: util.generateId(),
-      startDate: today,
-      note: '',
-      symptoms: []
+    try {
+      const res = await api.period.addRecord({ startDate: today, note: '', symptoms: [], flowLevel: 2 })
+      if (res.code === 0) {
+        wx.showToast({ title: '已记录今天开始', icon: 'success' })
+        this.refreshData()
+      } else {
+        wx.showToast({ title: res.message || '记录失败', icon: 'none' })
+      }
+    } catch (e) {
+      wx.showToast({ title: '网络错误', icon: 'none' })
     }
-    periods.records.push(newRecord)
-    wx.setStorageSync('periods', periods)
-    wx.showToast({ title: '已记录今天开始', icon: 'success' })
-    this.refreshData()
   },
 
   toggleSettings() {
     this.setData({ selectedSettings: !this.data.selectedSettings })
   },
 
-  changeCycle(e) {
+  async changeCycle(e) {
     const value = this.data.cycleOptions[e.detail.value]
-    const periods = { ...this.data.periods, cycleLength: value }
-    wx.setStorageSync('periods', periods)
-    this.refreshData()
+    try {
+      const res = await api.period.updateConfig({
+        cycleLength: value,
+        periodLength: this.data.periods.periodLength
+      })
+      if (res.code !== 0) {
+        wx.showToast({ title: res.message || '保存失败', icon: 'none' })
+        return
+      }
+      this.setData({ periods: { ...this.data.periods, cycleLength: value } })
+      this.refreshData()
+    } catch (e) {
+      wx.showToast({ title: '网络错误', icon: 'none' })
+    }
   },
 
-  changePeriod(e) {
+  async changePeriod(e) {
     const value = this.data.periodOptions[e.detail.value]
-    const periods = { ...this.data.periods, periodLength: value }
-    wx.setStorageSync('periods', periods)
-    this.refreshData()
+    try {
+      const res = await api.period.updateConfig({
+        cycleLength: this.data.periods.cycleLength,
+        periodLength: value
+      })
+      if (res.code !== 0) {
+        wx.showToast({ title: res.message || '保存失败', icon: 'none' })
+        return
+      }
+      this.setData({ periods: { ...this.data.periods, periodLength: value } })
+      this.refreshData()
+    } catch (e) {
+      wx.showToast({ title: '网络错误', icon: 'none' })
+    }
   },
 
   deleteRecord(e) {
@@ -208,13 +250,19 @@ Page({
       title: '删除记录',
       content: '确定删除这条经期记录吗？',
       confirmColor: '#FF6B9D',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          const periods = this.data.periods
-          periods.records = periods.records.filter(r => r.id !== id)
-          wx.setStorageSync('periods', periods)
-          wx.showToast({ title: '已删除', icon: 'success' })
-          this.refreshData()
+          try {
+            const r = await api.period.removeRecord(id)
+            if (r.code === 0) {
+              wx.showToast({ title: '已删除', icon: 'success' })
+              this.refreshData()
+            } else {
+              wx.showToast({ title: r.message || '删除失败', icon: 'none' })
+            }
+          } catch (e) {
+            wx.showToast({ title: '网络错误', icon: 'none' })
+          }
         }
       }
     })

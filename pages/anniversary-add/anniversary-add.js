@@ -1,5 +1,6 @@
 // pages/anniversary-add/anniversary-add.js
 const util = require('../../utils/util.js')
+const api = require('../../utils/api.js')
 
 Page({
   data: {
@@ -23,10 +24,11 @@ Page({
     ],
     important: false,
     emojiList: ['💕', '🎂', '🌹', '🎁', '🎉', '💖', '💍', '👰', '🤵', '✈️', '🏠', '💝', '🧸', '🌸', '⭐', '🥰', '💓', '💐'],
-    emoji: '💕'
+    emoji: '💕',
+    saving: false
   },
 
-  onLoad(options) {
+  async onLoad(options) {
     const today = util.formatDate(new Date(), 'YYYY-MM-DD')
     this.setData({
       todayStr: today,
@@ -43,20 +45,26 @@ Page({
       })
       wx.setNavigationBarTitle({ title: '设置恋爱纪念日' })
     } else if (options.id) {
-      const list = wx.getStorageSync('anniversaries') || []
-      const item = list.find(a => a.id === Number(options.id))
-      if (item) {
-        this.setData({
-          isEdit: true,
-          editId: item.id,
-          title: item.title,
-          date: item.date,
-          type: item.type,
-          repeat: item.repeat,
-          important: item.important || false,
-          emoji: item.emoji || '💕'
-        })
-        wx.setNavigationBarTitle({ title: '编辑纪念日' })
+      try {
+        const res = await api.anniversary.list()
+        if (res.code === 0) {
+          const item = res.data.find(a => a.id === Number(options.id))
+          if (item) {
+            this.setData({
+              isEdit: true,
+              editId: item.id,
+              title: item.title,
+              date: item.date,
+              type: item.type,
+              repeat: item.repeat,
+              important: item.important || false,
+              emoji: item.emoji || '💕'
+            })
+            wx.setNavigationBarTitle({ title: '编辑纪念日' })
+          }
+        }
+      } catch (e) {
+        console.error('获取纪念日详情失败', e)
       }
     }
   },
@@ -89,7 +97,8 @@ Page({
     this.setData({ important: e.detail.value })
   },
 
-  save() {
+  async save() {
+    if (this.data.saving) return
     if (!this.data.title.trim()) {
       wx.showToast({ title: '请输入纪念标题', icon: 'none' })
       return
@@ -99,14 +108,28 @@ Page({
       return
     }
 
-    // 如果是设置恋爱纪念日
+    // 如果是设置恋爱纪念日：更新后端的 loveDate
     if (this.data.fromLoveDate) {
-      const coupleInfo = wx.getStorageSync('coupleInfo') || {}
-      coupleInfo.loveDate = this.data.date
-      wx.setStorageSync('coupleInfo', coupleInfo)
+      this.setData({ saving: true })
+      wx.showLoading({ title: '保存中...' })
+      try {
+        const res = await api.auth.updateProfile({ loveDate: this.data.date })
+        wx.hideLoading()
+        this.setData({ saving: false })
+        if (res.code === 0) {
+          wx.showToast({ title: '设置成功 💖', icon: 'success' })
+          setTimeout(() => wx.navigateBack(), 800)
+        } else {
+          wx.showToast({ title: res.message || '设置失败', icon: 'none' })
+        }
+      } catch (e) {
+        wx.hideLoading()
+        this.setData({ saving: false })
+        wx.showToast({ title: '网络错误', icon: 'none' })
+      }
+      return
     }
 
-    let list = wx.getStorageSync('anniversaries') || []
     const payload = {
       title: this.data.title.trim(),
       date: this.data.date,
@@ -116,20 +139,37 @@ Page({
       important: this.data.important
     }
 
-    if (this.data.isEdit) {
-      list = list.map(a => a.id === this.data.editId ? { ...a, ...payload } : a)
-      wx.showToast({ title: '修改成功 ✅', icon: 'success' })
-    } else {
-      list.unshift({
-        id: Date.now(),
-        ...payload
-      })
-      wx.showToast({ title: '添加成功 🎉', icon: 'success' })
+    this.setData({ saving: true })
+    wx.showLoading({ title: '保存中...' })
+    try {
+      if (this.data.isEdit) {
+        const res = await api.anniversary.update(this.data.editId, payload)
+        wx.hideLoading()
+        this.setData({ saving: false })
+        if (res.code === 0) {
+          wx.showToast({ title: '修改成功 ✅', icon: 'success' })
+        } else {
+          wx.showToast({ title: res.message || '修改失败', icon: 'none' })
+          return
+        }
+      } else {
+        const res = await api.anniversary.add(payload)
+        wx.hideLoading()
+        this.setData({ saving: false })
+        if (res.code === 0) {
+          wx.showToast({ title: '添加成功 🎉', icon: 'success' })
+        } else {
+          wx.showToast({ title: res.message || '添加失败', icon: 'none' })
+          return
+        }
+      }
+      setTimeout(() => {
+        wx.navigateBack()
+      }, 800)
+    } catch (e) {
+      wx.hideLoading()
+      this.setData({ saving: false })
+      wx.showToast({ title: '网络错误，请检查后端服务', icon: 'none' })
     }
-
-    wx.setStorageSync('anniversaries', list)
-    setTimeout(() => {
-      wx.navigateBack()
-    }, 800)
   }
 })

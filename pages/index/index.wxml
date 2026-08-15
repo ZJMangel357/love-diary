@@ -107,7 +107,8 @@
       <text class="section-more">查看全部 ›</text>
     </view>
     <view class="today-menu-card animate-slide-up" wx:if="{{todayMenu}}" bindtap="goToMenuDetail">
-      <view class="menu-dish-emoji">🍳</view>
+      <image wx:if="{{todayMenu.image}}" class="menu-dish-img" src="{{todayMenu.image}}" mode="aspectFill" />
+      <view class="menu-dish-emoji" wx:else>🍳</view>
       <view class="menu-dish-info">
         <view class="dish-name-row">
           <text class="dish-name">{{todayMenu.name}}</text>
@@ -165,7 +166,8 @@
     <scroll-view scroll-x="true" class="moments-scroll" wx:if="{{recentMoments.length > 0}}">
       <view class="moment-card animate-slide-up" wx:for="{{recentMoments}}" wx:key="id"
             bindtap="goToMoments">
-        <view class="moment-mood">{{item.mood || '💕'}}</view>
+        <image wx:if="{{item.coverImage}}" class="moment-cover" src="{{item.coverImage}}" mode="aspectFill" />
+        <view class="moment-mood" wx:else>{{item.mood || '💕'}}</view>
         <view class="moment-title">{{item.title}}</view>
         <view class="moment-content">{{item.content}}</view>
         <view class="moment-footer">

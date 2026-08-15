@@ -1,5 +1,6 @@
 // pages/period-record/period-record.js
 const util = require('../../utils/util.js')
+const api = require('../../utils/api.js')
 
 Page({
   data: {
@@ -28,14 +29,32 @@ Page({
     ]
   },
 
-  onLoad() {
+  async onLoad() {
     const today = util.formatDate(new Date(), 'YYYY-MM-DD')
-    const periods = wx.getStorageSync('periods') || { records: [] }
     this.setData({
       todayStr: today,
-      startDate: today,
-      records: this.formatRecords(periods.records)
+      startDate: today
     })
+    await this.loadRecords()
+  },
+
+  async loadRecords() {
+    try {
+      const res = await api.period.records()
+      if (res.code === 0) {
+        // 后端返回 snake_case，转为前端字段
+        const records = (res.data || []).map(r => ({
+          ...r,
+          startDate: r.start_date,
+          flowLevel: r.flow_level
+        }))
+        this.setData({ records: this.formatRecords(records) })
+      } else {
+        wx.showToast({ title: res.message || '加载失败', icon: 'none' })
+      }
+    } catch (e) {
+      wx.showToast({ title: '网络错误，请检查后端服务', icon: 'none' })
+    }
   },
 
   // 格式化记录数据（WXML 不支持复杂 JS 表达式，需预计算）
@@ -90,29 +109,32 @@ Page({
     this.setData({ flowLevel: Number(e.currentTarget.dataset.level) })
   },
 
-  addRecord() {
+  async addRecord() {
     if (!this.data.startDate) {
       wx.showToast({ title: '请选择日期', icon: 'none' })
       return
     }
-    const periods = wx.getStorageSync('periods') || { records: [], cycleLength: 28, periodLength: 5 }
-    const newRecord = {
-      id: Date.now(),
-      startDate: this.data.startDate,
-      note: this.data.note.trim(),
-      symptoms: this.data.selectedSymptoms,
-      flowLevel: this.data.flowLevel,
-      createdAt: new Date().toISOString()
+    try {
+      const res = await api.period.addRecord({
+        startDate: this.data.startDate,
+        note: this.data.note.trim(),
+        symptoms: this.data.selectedSymptoms,
+        flowLevel: this.data.flowLevel
+      })
+      if (res.code !== 0) {
+        wx.showToast({ title: res.message || '记录失败', icon: 'none' })
+        return
+      }
+      wx.showToast({ title: '记录成功 🌸', icon: 'success' })
+      await this.loadRecords()
+      this.setData({
+        note: '',
+        selectedSymptoms: [],
+        flowLevel: 2
+      })
+    } catch (e) {
+      wx.showToast({ title: '网络错误', icon: 'none' })
     }
-    periods.records.push(newRecord)
-    wx.setStorageSync('periods', periods)
-    wx.showToast({ title: '记录成功 🌸', icon: 'success' })
-    this.setData({
-      records: this.formatRecords(periods.records),
-      note: '',
-      selectedSymptoms: [],
-      flowLevel: 2
-    })
   },
 
   deleteRecord(e) {
@@ -121,15 +143,19 @@ Page({
       title: '删除记录',
       content: '确定删除这条记录吗？',
       confirmColor: '#FF6B9D',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          const periods = wx.getStorageSync('periods') || { records: [] }
-          periods.records = periods.records.filter(r => r.id !== id)
-          wx.setStorageSync('periods', periods)
-          wx.showToast({ title: '已删除', icon: 'success' })
-          this.setData({
-            records: this.formatRecords(periods.records)
-          })
+          try {
+            const r = await api.period.removeRecord(id)
+            if (r.code === 0) {
+              wx.showToast({ title: '已删除', icon: 'success' })
+              await this.loadRecords()
+            } else {
+              wx.showToast({ title: r.message || '删除失败', icon: 'none' })
+            }
+          } catch (e) {
+            wx.showToast({ title: '网络错误', icon: 'none' })
+          }
         }
       }
     })

@@ -94,11 +94,18 @@ Page({
           loveQuote: util.getRandomLoveQuote()
         })
 
+        // 一次性迁移旧版本地存储的数据到后端（仅首次，失败则下次重试）
+        if (!wx.getStorageSync('dataMigrated')) {
+          await api.migrateLocalData()
+          wx.setStorageSync('dataMigrated', true)
+        }
+
         // 并行加载各模块数据
         await Promise.all([
           this.loadMenus(),
           this.loadAnniversaries(),
-          this.loadMoments()
+          this.loadMoments(),
+          this.loadPeriod()
         ])
       }
     } catch (e) {
@@ -124,7 +131,10 @@ Page({
     try {
       const res = await api.menu.list()
       if (res.code === 0) {
-        const menus = res.data || []
+        const menus = (res.data || []).map(m => ({
+          ...m,
+          image: m.image ? api.getFullUrl(m.image) : ''
+        }))
         const todayMenu = menus.find(m => m.is_today) || (menus.length > 0 ? menus[0] : null)
         this.setData({ todayMenu })
       }
@@ -161,7 +171,14 @@ Page({
     try {
       const res = await api.moment.list()
       if (res.code === 0) {
-        const moments = res.data || []
+        const moments = (res.data || []).map(m => {
+          let images = m.images || []
+          if (typeof images === 'string') {
+            try { images = JSON.parse(images) } catch (e) { images = [] }
+          }
+          images = images.map(url => api.getFullUrl(url))
+          return { ...m, images, coverImage: images.length > 0 ? images[0] : '' }
+        })
         const recentMoments = moments
           .sort((a, b) => new Date(b.date.replace(/-/g, '/')) - new Date(a.date.replace(/-/g, '/')))
           .slice(0, 2)
@@ -169,6 +186,29 @@ Page({
       }
     } catch (e) {
       console.error('加载时光记录失败', e)
+    }
+  },
+
+  // 加载经期状态
+  async loadPeriod() {
+    try {
+      const [configRes, recordsRes] = await Promise.all([
+        api.period.getConfig(),
+        api.period.records()
+      ])
+      const cfg = configRes.code === 0 ? (configRes.data || {}) : {}
+      const records = recordsRes.code === 0 ? (recordsRes.data || []) : []
+      if (records.length > 0) {
+        const lastRecord = records[records.length - 1]
+        const cycleLength = cfg.cycle_length || 28
+        const periodLength = cfg.period_length || 5
+        const phase = util.periodUtils.getCurrentPhase(lastRecord.start_date, cycleLength, periodLength)
+        const nextStart = util.periodUtils.getNextPeriodStart(lastRecord.start_date, cycleLength)
+        const daysToNext = util.getDaysBetween(util.formatDate(new Date(), 'YYYY-MM-DD'), nextStart)
+        this.setData({ periodInfo: { ...phase, daysToNext } })
+      }
+    } catch (e) {
+      console.error('加载经期失败', e)
     }
   },
 
@@ -190,7 +230,9 @@ Page({
       const randomMenu = util.getRandomItem(res.data)
       const setRes = await api.menu.setToday(randomMenu.id)
       if (setRes.code === 0) {
-        this.setData({ todayMenu: randomMenu })
+        this.setData({
+          todayMenu: { ...randomMenu, image: randomMenu.image ? api.getFullUrl(randomMenu.image) : '' }
+        })
         wx.showToast({ title: '今日菜品已更新 🎉', icon: 'none' })
       }
     } catch (e) {

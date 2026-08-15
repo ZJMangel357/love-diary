@@ -10,7 +10,7 @@
     <view class="couple-big-card animate-bounce-in" bindtap="editCouple">
       <view class="cbc-avatars">
         <view class="avatar-wrap-l">
-          <view class="avatar avatar-lg">{{coupleInfo.partnerName1[0] || '他'}}</view>
+          <view class="avatar avatar-lg">{{coupleInfo.avatarText1 || '他'}}</view>
           <view class="small-heart heart-1">💕</view>
         </view>
         <view class="cbc-love">
@@ -19,7 +19,7 @@
           <text class="love-days-unit">天</text>
         </view>
         <view class="avatar-wrap-r">
-          <view class="avatar avatar-lg">{{coupleInfo.partnerName2[0] || '她'}}</view>
+          <view class="avatar avatar-lg">{{coupleInfo.avatarText2 || '她'}}</view>
           <view class="small-heart heart-2">💖</view>
         </view>
       </view>
@@ -102,16 +102,7 @@
         <view class="si-icon list-icon-mint">📤</view>
         <view class="si-content">
           <text class="si-title">导出数据备份</text>
-          <text class="si-subtitle">复制所有数据到剪贴板保存</text>
-        </view>
-        <text class="si-arrow">›</text>
-      </view>
-      
-      <view class="setting-item" bindtap="importData">
-        <view class="si-icon list-icon-yellow">📥</view>
-        <view class="si-content">
-          <text class="si-title">导入备份数据</text>
-          <text class="si-subtitle">从剪贴板恢复之前的数据</text>
+          <text class="si-subtitle">从云端拉取所有数据保存</text>
         </view>
         <text class="si-arrow">›</text>
       </view>
@@ -138,7 +129,7 @@
         <view class="si-icon" style="background: rgba(255,107,157,0.15);">🗑️</view>
         <view class="si-content">
           <text class="si-title" style="color: #FF6B9D;">重置所有数据</text>
-          <text class="si-subtitle">清除全部内容，恢复默认示例</text>
+          <text class="si-subtitle">清空菜品、纪念日、时光与经期记录</text>
         </view>
         <text class="si-arrow">›</text>
       </view>

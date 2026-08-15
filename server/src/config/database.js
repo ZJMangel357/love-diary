@@ -11,7 +11,9 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  charset: 'utf8mb4'
+  charset: 'utf8mb4',
+  // 日期以字符串返回（DATE → 'YYYY-MM-DD'），避免时区偏移导致日期错一天
+  dateStrings: true
 })
 
 module.exports = pool

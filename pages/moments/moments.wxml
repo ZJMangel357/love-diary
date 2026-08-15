@@ -68,7 +68,10 @@
                   {{moment.content}}
                 </view>
                 <view class="tl-images" wx:if="{{moment.images && moment.images.length > 0}}">
-                  <view class="tl-image-count">📷 {{moment.images.length}}张照片</view>
+                  <image class="tl-img" wx:for="{{moment.images}}" wx:for-item="img" wx:key="*this"
+                         src="{{img}}" mode="aspectFill" catchtap="previewImages"
+                         data-urls="{{moment.images}}" data-current="{{img}}" />
+                  <view class="tl-image-count" wx:if="{{moment.images.length > 1}}">共{{moment.images.length}}张 ›</view>
                 </view>
                 <view class="tl-footer">
                   <text class="tl-date">📅 {{moment.date}}</text>
@@ -92,7 +95,8 @@
               style="animation-delay: {{index % 8 * 0.04}}s;"
               data-id="{{item.id}}" bindtap="previewItem">
           <view class="gi-visual">
-            <view class="gi-mood">{{item.mood || '💕'}}</view>
+            <image class="gi-img" wx:if="{{item.coverImage}}" src="{{item.coverImage}}" mode="aspectFill" />
+            <view class="gi-mood" wx:else>{{item.mood || '💕'}}</view>
             <view class="gi-images" wx:if="{{item.images && item.images.length > 0}}">
               <text class="gi-img-count">📷 {{item.images.length}}</text>
             </view>
