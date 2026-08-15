@@ -1,7 +1,7 @@
 // utils/api.js - 后端API请求工具
 
-const BASE_URL = 'http://localhost:3000/api' // 本地开发地址，部署后替换为服务器地址
-const ROOT_URL = 'http://localhost:3000' // 后端根地址（用于拼接图片等静态资源路径）
+const BASE_URL = 'http://10.43.4.61:3000/api' // 真机调试用电脑局域网IP（模拟器/手机都可访问）；部署后替换为服务器地址
+const ROOT_URL = 'http://10.43.4.61:3000' // 后端根地址（用于拼接图片等静态资源路径）
 
 // 获取本地存储的 token
 function getToken() {
