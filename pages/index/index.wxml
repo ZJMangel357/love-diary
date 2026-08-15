@@ -15,7 +15,7 @@
     <view class="hero-topbar">
       <view class="hero-brand">
         <text class="hero-brand-heart">❤</text>
-        <text class="hero-brand-text">我们的故事</text>
+        <text class="hero-brand-text">我们的恋爱空间</text>
       </view>
       <view class="hero-date">{{todayStr}}</view>
     </view>
@@ -78,6 +78,35 @@
       <text class="single-tip-text">单人体验中，分享配对码给 TA 即可开启双人模式</text>
     </view>
 
+    <!-- ============ 恋爱打卡卡片 ============ -->
+    <view class="checkin-card animate-slide-up" wx:if="{{checkin}}" bindtap="goToCheckin">
+      <view class="cc-left">
+        <view class="cc-heart {{checkin.myDone ? 'done' : ''}}">
+          <text class="cc-heart-emoji">{{checkin.bothDone ? '💖' : checkin.myDone ? '💗' : '🤍'}}</text>
+        </view>
+      </view>
+      <view class="cc-body">
+        <view class="cc-row1">
+          <text class="cc-title">恋爱打卡</text>
+          <view class="cc-streak">
+            <text class="cc-streak-num">{{checkin.streak}}</text>
+            <text class="cc-streak-unit">天连签</text>
+          </view>
+        </view>
+        <view class="cc-status">
+          <text class="cc-status-text" wx:if="{{checkin.bothDone}}">🎉 今天一起打卡成功！</text>
+          <text class="cc-status-text" wx:elif="{{checkin.myDone && !checkin.partnerDone}}">我已打卡，等 TA 一起点亮~</text>
+          <text class="cc-status-text" wx:elif="{{!checkin.myDone && checkin.partnerDone}}">TA 已打卡，快跟上！</text>
+          <text class="cc-status-text" wx:else>今天还没打卡，快去点亮爱心~</text>
+        </view>
+        <view class="cc-partner">
+          <text class="cc-p-item {{checkin.myDone ? 'ok' : ''}}">我 {{checkin.myDone ? '✓' : '○'}}</text>
+          <text class="cc-p-item {{checkin.partnerDone ? 'ok' : ''}}">TA {{checkin.partnerDone ? '✓' : '○'}}</text>
+        </view>
+      </view>
+      <view class="cc-arrow">›</view>
+    </view>
+
     <!-- ============ 每日情话卡片（可换一句） ============ -->
     <view class="quote-card animate-slide-up" bindtap="changeQuote">
       <view class="quote-icon">💌</view>
@@ -90,10 +119,10 @@
       </view>
     </view>
 
-    <!-- ============ 4大快捷入口（宫格） ============ -->
+    <!-- ============ 快捷入口（宫格） ============ -->
     <view class="quick-grid">
       <view class="quick-item animate-slide-up" wx:for="{{quickActions}}" wx:key="id"
-            style="animation-delay: {{index * 0.08}}s;"
+            style="animation-delay: {{index * 0.06}}s;"
             data-page="{{item.page}}" bindtap="goToPage">
         <view class="quick-icon quick-{{item.color}}">{{item.icon}}</view>
         <view class="quick-title">{{item.title}}</view>

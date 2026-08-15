@@ -1,0 +1,122 @@
+<!--pages/quiz/quiz.wxml-->
+<view class="page">
+
+  <!-- ============ 开始页 ============ -->
+  <view wx:if="{{step === 'start'}}">
+    <view class="hero-section quiz-hero" style="margin: 0; border-radius: 0 0 48rpx 48rpx;">
+      <view class="deco-heart" style="top: 24rpx; right: 40rpx; font-size: 90rpx;">💌</view>
+      <view class="deco-heart" style="bottom: 40rpx; left: 44rpx; font-size: 64rpx; opacity: 0.35;">💘</view>
+      <view class="hero-title">💞 心有灵犀</view>
+      <view class="hero-subtitle">测测你们的默契度</view>
+    </view>
+
+    <view class="container">
+      <view class="start-card animate-slide-up">
+        <view class="start-emoji animate-float">🧠</view>
+        <view class="start-title">默契大挑战</view>
+        <view class="start-desc">10 道题，两人分别作答，答案相同率越高默契度越高</view>
+        <view class="start-tags">
+          <view class="start-tag">💘 情侣专属</view>
+          <view class="start-tag">✨ 双人作答</view>
+        </view>
+      </view>
+
+      <view class="btn btn-primary start-btn" hover-class="btn-press" bindtap="startQuiz">开始测试</view>
+
+      <view class="last-result" wx:if="{{hasLastResult}}" hover-class="last-result-active" bindtap="viewResult">
+        <text class="last-result-emoji">🏆</text>
+        <text class="last-result-text" wx:if="{{lastMatchRate > 0}}">上次默契度 {{lastMatchRate}}%</text>
+        <text class="last-result-text" wx:else>我已作答 · 看看结果</text>
+        <text class="last-result-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ============ 答题页 ============ -->
+  <view wx:elif="{{step === 'doing'}}">
+    <view class="quiz-top animate-slide-up">
+      <view class="quiz-count-row">
+        <view class="quiz-count">
+          <text class="quiz-count-num">{{currentNum}}</text>
+          <text class="quiz-count-total">/ {{totalNum}}</text>
+        </view>
+        <text class="quiz-hint">第 {{currentNum}} 题</text>
+      </view>
+      <view class="progress-bar quiz-progress">
+        <view class="progress-fill" style="width: {{progressPercent}}%;"></view>
+      </view>
+    </view>
+
+    <view class="question-card animate-slide-up">
+      <text class="question-badge">Q{{currentNum}}</text>
+      <text class="question-text">{{currentQuestion.question}}</text>
+    </view>
+
+    <view class="option-list">
+      <view class="option-btn {{index === 0 ? 'option-pink' : 'option-purple'}}"
+            wx:for="{{currentQuestion.options}}" wx:key="text"
+            hover-class="option-btn-active"
+            data-idx="{{index}}" bindtap="chooseOption">
+        {{item.text}}
+      </view>
+    </view>
+  </view>
+
+  <!-- ============ 结果页 ============ -->
+  <view wx:else class="result-page">
+
+    <!-- 对方还没答：等待 -->
+    <block wx:if="{{!bothDone}}">
+      <view class="waiting-card animate-slide-up">
+        <view class="waiting-emoji animate-float">💘</view>
+        <view class="waiting-title">✅ 我已作答完成</view>
+        <view class="waiting-desc">等待 TA 来挑战~</view>
+        <view class="waiting-hearts">
+          <text class="heart heart-1">💗</text>
+          <text class="heart heart-2">💖</text>
+          <text class="heart heart-3">💕</text>
+        </view>
+        <view class="btn btn-primary waiting-btn" hover-class="btn-press" bindtap="loadResult">刷新看看</view>
+      </view>
+      <view class="result-tip">TA 答完后，默契度就会自动揭晓</view>
+    </block>
+
+    <!-- 双方都答完：展示结果 -->
+    <block wx:else>
+      <view class="score-card animate-bounce-in">
+        <view class="deco-heart" style="top: 30rpx; right: 30rpx; font-size: 80rpx;">🎈</view>
+        <view class="deco-heart" style="bottom: 30rpx; left: 30rpx; font-size: 56rpx; opacity: 0.25;">✨</view>
+        <view class="score-num">{{matchRate}}<text class="score-percent">%</text></view>
+        <view class="score-label">默 契 度</view>
+        <view class="score-level"><text class="score-level-emoji">{{levelEmoji}}</text>{{levelText}}</view>
+      </view>
+
+      <view class="result-section-title">逐题对比</view>
+
+      <view class="compare-list">
+        <view class="compare-item animate-slide-up"
+              wx:for="{{compareList}}" wx:key="no"
+              style="animation-delay: {{index * 0.05}}s;">
+          <view class="compare-head">
+            <text class="compare-no">第 {{item.no}} 题</text>
+            <text class="compare-mark {{item.match ? 'match-yes' : 'match-no'}}">{{item.match ? '✓ 心有灵犀' : '✗ 差一点'}}</text>
+          </view>
+          <view class="compare-question">{{item.question}}</view>
+          <view class="compare-answer-row">
+            <view class="compare-answer mine-answer">
+              <text class="answer-label">我</text>
+              <text class="answer-text">{{item.myAnswer}}</text>
+            </view>
+            <view class="compare-answer ta-answer">
+              <text class="answer-label">TA</text>
+              <text class="answer-text">{{item.partnerAnswer}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="btn btn-primary retry-btn" hover-class="btn-press" bindtap="startQuiz">再测一次</view>
+    </block>
+  </view>
+
+</view>

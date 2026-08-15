@@ -161,6 +161,19 @@ const moment = {
   remove(id) { return request('/moments/' + id, 'DELETE') }
 }
 
+// 恋爱打卡
+const checkin = {
+  status() { return request('/checkin/status', 'GET') },
+  doCheckin(note) { return request('/checkin', 'POST', { note }) },
+  history(days) { return request('/checkin/history?days=' + (days || 30), 'GET') }
+}
+
+// 心有灵犀默契测试
+const quiz = {
+  submit(quizId, answers, score) { return request('/quiz/submit', 'POST', { quizId, answers, score }) },
+  result(quizId) { return request('/quiz/result?quizId=' + quizId, 'GET') }
+}
+
 // 一次性迁移本地存储的历史数据到后端（旧版本地存储模式升级用）
 async function migrateLocalData() {
   try {
@@ -234,6 +247,8 @@ module.exports = {
   anniversary,
   period,
   moment,
+  checkin,
+  quiz,
   wxLogin,
   uploadImage,
   uploadImages,

@@ -1,0 +1,86 @@
+<!--pages/checkin/checkin.wxml-->
+<view class="page">
+  <!-- 顶部粉色渐变 hero -->
+  <view class="hero-section checkin-hero" style="margin: 0; border-radius: 0 0 48rpx 48rpx;">
+    <view class="deco-heart" style="top: 20rpx; right: 40rpx; font-size: 72rpx;">💖</view>
+    <view class="deco-heart" style="top: 96rpx; left: 36rpx; font-size: 52rpx; opacity: 0.3;">💌</view>
+    <view class="deco-heart" style="bottom: 24rpx; right: 160rpx; font-size: 40rpx; opacity: 0.25;">✨</view>
+    <view class="hero-title">❤ 恋爱打卡</view>
+    <view class="hero-subtitle">每天一起，点亮爱的印记</view>
+  </view>
+
+  <view class="container container-padding-bottom">
+    <!-- 今日打卡大卡片 -->
+    <view class="checkin-card" bindtap="doCheckin">
+      <view class="heart-area">
+        <view class="heart-circle {{today.heartClass}}">
+          <text class="heart-icon">💖</text>
+        </view>
+        <view class="heart-tip">{{today.heartTip}}</view>
+      </view>
+
+      <!-- 双方打卡状态 -->
+      <view class="status-row">
+        <view class="status-item">
+          <text class="status-label">我</text>
+          <text class="status-mark {{today.myStatusCls}}">{{today.myStatusText}}</text>
+        </view>
+        <view class="status-item">
+          <text class="status-label">TA</text>
+          <text class="status-mark {{today.partnerStatusCls}}">{{today.partnerStatusText}}</text>
+        </view>
+      </view>
+
+      <!-- 双方都打卡成功 -->
+      <view class="both-done" wx:if="{{today.bothDone}}">
+        <text>🎉</text>
+        <text class="bd-text">今天一起打卡成功！</text>
+        <text class="bd-badge">💝</text>
+      </view>
+
+      <!-- 连续打卡天数 -->
+      <view class="streak-row">
+        <text class="streak-num">{{streak}}</text>
+        <text class="streak-unit">天</text>
+        <text class="streak-label">共同打卡</text>
+      </view>
+
+      <!-- 今日寄语 -->
+      <view class="today-note" wx:if="{{today.note}}">💬 {{today.note}}</view>
+
+      <!-- 打卡按钮（纯视觉，点击冒泡到整卡） -->
+      <view class="checkin-btn {{today.btnClass}}">{{today.btnText}}</view>
+    </view>
+
+    <!-- 最近 7 天打卡条 -->
+    <view class="section-title">📅 最近 7 天</view>
+    <view class="week-card">
+      <view class="week-cell" wx:for="{{weekCells}}" wx:key="dateLabel">
+        <view class="wc-day">{{item.dayLabel}}</view>
+        <view class="wc-dot {{item.cls}} {{item.isToday ? 'today' : ''}}">
+          <text class="wc-mark">{{item.mark}}</text>
+        </view>
+        <view class="wc-date">{{item.dateLabel}}</view>
+      </view>
+    </view>
+
+    <!-- 打卡历史记录 -->
+    <view class="section-title" wx:if="{{history.length > 0}}">📜 打卡记录</view>
+    <view class="history-list" wx:if="{{history.length > 0}}">
+      <view class="history-item" wx:for="{{history}}" wx:key="dateLabel">
+        <view class="hi-emoji">{{item.statusEmoji}}</view>
+        <view class="hi-info">
+          <view class="hi-date">
+            <text class="hi-date-text">{{item.dateLabel}}</text>
+            <text class="hi-tag" wx:if="{{item.isToday}}">今天</text>
+          </view>
+          <view class="hi-people">
+            <text class="hi-person {{item.myDone ? 'ok' : 'no'}}">我 {{item.myText}}</text>
+            <text class="hi-person {{item.partnerDone ? 'ok' : 'no'}}">TA {{item.partnerText}}</text>
+          </view>
+          <view class="hi-note" wx:if="{{item.note}}">“{{item.note}}”</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

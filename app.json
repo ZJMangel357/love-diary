@@ -2,11 +2,13 @@
   "pages": [
     "pages/index/index",
     "pages/login/login",
-    "pages/menu/menu",
-    "pages/anniversary/anniversary",
-    "pages/period/period",
     "pages/moments/moments",
+    "pages/anniversary/anniversary",
     "pages/profile/profile",
+    "pages/menu/menu",
+    "pages/period/period",
+    "pages/checkin/checkin",
+    "pages/quiz/quiz",
     "pages/menu-add/menu-add",
     "pages/anniversary-add/anniversary-add",
     "pages/moments-add/moments-add",
@@ -27,19 +29,15 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "甜蜜首页"
-      },
-      {
-        "pagePath": "pages/menu/menu",
-        "text": "爱的菜单"
-      },
-      {
-        "pagePath": "pages/anniversary/anniversary",
-        "text": "纪念日"
+        "text": "恋爱空间"
       },
       {
         "pagePath": "pages/moments/moments",
         "text": "时光"
+      },
+      {
+        "pagePath": "pages/anniversary/anniversary",
+        "text": "纪念日"
       },
       {
         "pagePath": "pages/profile/profile",

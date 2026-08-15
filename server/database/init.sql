@@ -114,5 +114,35 @@ CREATE TABLE IF NOT EXISTS moments (
   INDEX idx_date (date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='时光记录表';
 
+-- 恋爱打卡表
+CREATE TABLE IF NOT EXISTS checkins (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  couple_id INT NOT NULL COMMENT '情侣关系ID',
+  check_date DATE NOT NULL COMMENT '打卡日期',
+  user1_done TINYINT(1) DEFAULT 0 COMMENT '邀请方是否打卡',
+  user2_done TINYINT(1) DEFAULT 0 COMMENT '被邀请方是否打卡',
+  note VARCHAR(200) DEFAULT '' COMMENT '当天寄语',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (couple_id) REFERENCES couples(id) ON DELETE CASCADE,
+  UNIQUE KEY uk_couple_date (couple_id, check_date),
+  INDEX idx_couple (couple_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='恋爱打卡表';
+
+-- 默契测试答题记录表
+CREATE TABLE IF NOT EXISTS quiz_records (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  couple_id INT NOT NULL COMMENT '情侣关系ID',
+  user_id INT NOT NULL COMMENT '答题用户ID',
+  quiz_id VARCHAR(32) NOT NULL COMMENT '题目套ID',
+  answers VARCHAR(500) DEFAULT '' COMMENT '答案(JSON数组)',
+  score INT DEFAULT 0 COMMENT '得分0-100',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (couple_id) REFERENCES couples(id) ON DELETE CASCADE,
+  UNIQUE KEY uk_couple_user_quiz (couple_id, user_id, quiz_id),
+  INDEX idx_couple (couple_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='默契测试答题记录表';
+
 -- 插入示例数据（可选）
 -- INSERT INTO users (nick_name, pairing_code, role) VALUES ('他', 'LD2024', 'inviter');

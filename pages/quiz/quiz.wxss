@@ -1,0 +1,455 @@
+/* pages/quiz/quiz.wxss - 心有灵犀默契测试 */
+.page {
+  min-height: 100vh;
+}
+
+/* 粉色渐变 hero（覆盖全局 hero-pink） */
+.quiz-hero {
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF9BB0 100%);
+}
+
+/* 按钮按压态 */
+.btn-press {
+  transform: scale(0.96);
+  opacity: 0.92;
+}
+
+/* ============ 开始页 ============ */
+.start-card {
+  background: #FFFFFF;
+  border-radius: 48rpx;
+  padding: 64rpx 40rpx;
+  text-align: center;
+  box-shadow: 0 16rpx 48rpx rgba(255, 107, 157, 0.15);
+  border: 2rpx solid #FFE4EF;
+  margin-top: 32rpx;
+}
+
+.start-emoji {
+  font-size: 120rpx;
+  line-height: 1.2;
+}
+
+.start-title {
+  font-size: 40rpx;
+  font-weight: 800;
+  color: #4A4A4A;
+  margin-top: 24rpx;
+}
+
+.start-desc {
+  font-size: 27rpx;
+  color: #8A7F8A;
+  line-height: 1.7;
+  margin-top: 16rpx;
+  padding: 0 20rpx;
+}
+
+.start-tags {
+  display: flex;
+  justify-content: center;
+  gap: 16rpx;
+  margin-top: 28rpx;
+}
+
+.start-tag {
+  font-size: 22rpx;
+  color: #FF6B9D;
+  background: rgba(255, 107, 157, 0.1);
+  padding: 8rpx 22rpx;
+  border-radius: 24rpx;
+  font-weight: 600;
+}
+
+.start-btn {
+  margin-top: 40rpx;
+  width: 100%;
+  height: 96rpx;
+  font-size: 34rpx;
+  border-radius: 48rpx;
+}
+
+.last-result {
+  margin-top: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 26rpx 32rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 157, 0.1);
+  border: 2rpx dashed #FFB4CC;
+  transition: all 0.2s ease;
+}
+
+.last-result-active {
+  background: #FFF0F5;
+  transform: scale(0.98);
+}
+
+.last-result-emoji {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.last-result-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #FF6B9D;
+}
+
+.last-result-arrow {
+  font-size: 32rpx;
+  color: #B8A5A5;
+  margin-left: 12rpx;
+}
+
+/* ============ 答题页 ============ */
+.quiz-top {
+  margin: 32rpx 32rpx 0;
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 28rpx 32rpx;
+  box-shadow: 0 10rpx 32rpx rgba(255, 107, 157, 0.12);
+}
+
+.quiz-count-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.quiz-count-num {
+  font-size: 44rpx;
+  font-weight: 900;
+  color: #FF6B9D;
+}
+
+.quiz-count-total {
+  font-size: 26rpx;
+  color: #B8A5A5;
+}
+
+.quiz-hint {
+  font-size: 24rpx;
+  color: #9B7FED;
+  background: rgba(155, 127, 237, 0.1);
+  padding: 6rpx 18rpx;
+  border-radius: 20rpx;
+  font-weight: 600;
+}
+
+.quiz-progress {
+  height: 16rpx;
+  background: #FFE4EF;
+}
+
+.question-card {
+  margin: 32rpx 32rpx 0;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F9 100%);
+  border-radius: 48rpx;
+  padding: 56rpx 40rpx;
+  text-align: center;
+  box-shadow: 0 16rpx 48rpx rgba(255, 107, 157, 0.15);
+  border: 2rpx solid #FFE4EF;
+}
+
+.question-badge {
+  display: inline-block;
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF9BB0 100%);
+  padding: 8rpx 24rpx;
+  border-radius: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.question-text {
+  font-size: 38rpx;
+  font-weight: 800;
+  color: #4A4A4A;
+  line-height: 1.5;
+  display: block;
+}
+
+.option-list {
+  margin: 40rpx 32rpx 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.option-btn {
+  height: 120rpx;
+  border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+  border: 3rpx solid rgba(255, 107, 157, 0.3);
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 157, 0.08);
+  transition: all 0.2s ease;
+}
+
+.option-pink {
+  background: linear-gradient(135deg, #FFF0F5 0%, #FFFFFF 100%);
+}
+
+.option-purple {
+  background: linear-gradient(135deg, #F5F0FF 0%, #FFFFFF 100%);
+  border-color: rgba(155, 127, 237, 0.35);
+}
+
+.option-btn-active {
+  border-color: #FF6B9D;
+  background: #FFF0F5;
+  transform: scale(0.97);
+  box-shadow: 0 4rpx 16rpx rgba(255, 107, 157, 0.25);
+}
+
+/* ============ 结果页 ============ */
+.result-page {
+  padding-bottom: 60rpx;
+}
+
+.score-card {
+  margin: 32rpx;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F9 100%);
+  border-radius: 48rpx;
+  padding: 48rpx 32rpx;
+  text-align: center;
+  box-shadow: 0 16rpx 48rpx rgba(255, 107, 157, 0.18);
+  border: 2rpx solid #FFE4EF;
+  position: relative;
+  overflow: hidden;
+}
+
+.score-num {
+  display: inline-block;
+  font-size: 160rpx;
+  font-weight: 900;
+  color: #FF6B9D;
+  line-height: 1.1;
+  animation: beat 1.6s ease-in-out infinite;
+}
+
+.score-percent {
+  font-size: 64rpx;
+  font-weight: 900;
+  color: #FF6B9D;
+}
+
+.score-label {
+  font-size: 30rpx;
+  color: #8A7F8A;
+  letter-spacing: 8rpx;
+  margin-top: 8rpx;
+}
+
+.score-level {
+  display: inline-block;
+  margin-top: 24rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #9B7FED;
+  background: rgba(155, 127, 237, 0.12);
+  padding: 12rpx 36rpx;
+  border-radius: 32rpx;
+}
+
+.score-level-emoji {
+  margin-right: 8rpx;
+}
+
+.result-section-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+  margin: 40rpx 40rpx 20rpx;
+  display: flex;
+  align-items: center;
+}
+
+.result-section-title::before {
+  content: '';
+  width: 8rpx;
+  height: 32rpx;
+  background: linear-gradient(180deg, #FF6B9D 0%, #FFD93D 100%);
+  border-radius: 8rpx;
+  margin-right: 16rpx;
+}
+
+.compare-list {
+  margin: 0 32rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.compare-item {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 28rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 157, 0.08);
+  border: 2rpx solid #FFE4EF;
+}
+
+.compare-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.compare-no {
+  font-size: 22rpx;
+  color: #9B7FED;
+  background: rgba(155, 127, 237, 0.1);
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+  font-weight: 600;
+}
+
+.compare-mark {
+  font-size: 24rpx;
+  font-weight: 700;
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+}
+
+.match-yes {
+  color: #2D8B65;
+  background: rgba(168, 230, 207, 0.35);
+}
+
+.match-no {
+  color: #E55A8B;
+  background: rgba(255, 107, 157, 0.12);
+}
+
+.compare-question {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+  margin-bottom: 16rpx;
+}
+
+.compare-answer-row {
+  display: flex;
+  gap: 16rpx;
+}
+
+.compare-answer {
+  flex: 1;
+  border-radius: 20rpx;
+  padding: 16rpx 20rpx;
+  min-width: 0;
+}
+
+.mine-answer {
+  background: #FFF0F5;
+}
+
+.ta-answer {
+  background: #F5F0FF;
+}
+
+.answer-label {
+  font-size: 20rpx;
+  font-weight: 700;
+  color: #FF6B9D;
+  margin-right: 12rpx;
+}
+
+.ta-answer .answer-label {
+  color: #9B7FED;
+}
+
+.answer-text {
+  font-size: 26rpx;
+  color: #4A4A4A;
+  font-weight: 600;
+}
+
+.retry-btn {
+  display: flex;
+  width: calc(100% - 64rpx);
+  margin: 48rpx 32rpx 0;
+  height: 96rpx;
+  font-size: 34rpx;
+  border-radius: 48rpx;
+}
+
+/* ============ 等待页 ============ */
+.waiting-card {
+  margin: 40rpx 32rpx 0;
+  background: #FFFFFF;
+  border-radius: 48rpx;
+  padding: 72rpx 40rpx 56rpx;
+  text-align: center;
+  box-shadow: 0 16rpx 48rpx rgba(255, 107, 157, 0.15);
+  border: 2rpx solid #FFE4EF;
+}
+
+.waiting-emoji {
+  font-size: 120rpx;
+  line-height: 1.2;
+}
+
+.waiting-title {
+  font-size: 38rpx;
+  font-weight: 800;
+  color: #4A4A4A;
+  margin-top: 28rpx;
+}
+
+.waiting-desc {
+  font-size: 28rpx;
+  color: #8A7F8A;
+  margin-top: 12rpx;
+}
+
+.waiting-hearts {
+  display: flex;
+  justify-content: center;
+  gap: 20rpx;
+  margin: 36rpx 0 8rpx;
+}
+
+.heart {
+  font-size: 44rpx;
+  animation: beat 1.6s ease-in-out infinite;
+}
+
+.heart-2 {
+  animation-delay: 0.2s;
+}
+
+.heart-3 {
+  animation-delay: 0.4s;
+}
+
+.waiting-btn {
+  margin-top: 40rpx;
+  width: 100%;
+  height: 92rpx;
+  font-size: 32rpx;
+  border-radius: 46rpx;
+}
+
+.result-tip {
+  text-align: center;
+  font-size: 24rpx;
+  color: #B8A5A5;
+  margin-top: 28rpx;
+}
+
+/* ============ 动画 ============ */
+@keyframes beat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}

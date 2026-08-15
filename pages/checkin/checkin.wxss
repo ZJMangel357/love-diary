@@ -1,0 +1,360 @@
+/* pages/checkin/checkin.wxss */
+.page {
+  min-height: 100vh;
+  background: #FFF5F8;
+}
+
+/* 顶部 hero 渐变 */
+.checkin-hero {
+  padding: 48rpx 32rpx 60rpx;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF9BB0 100%);
+}
+
+/* 今日打卡大卡片 */
+.checkin-card {
+  background: #FFFFFF;
+  border-radius: 36rpx;
+  padding: 40rpx 32rpx 32rpx;
+  box-shadow: 0 12rpx 36rpx rgba(255, 107, 157, 0.16);
+  margin: -28rpx 0 24rpx;
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.checkin-card:active {
+  transform: scale(0.98);
+}
+
+/* 大爱心区域 */
+.heart-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.heart-circle {
+  width: 220rpx;
+  height: 220rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.heart-empty {
+  background: linear-gradient(135deg, #F2EFF1 0%, #E8E4E6 100%);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
+.heart-empty .heart-icon {
+  filter: grayscale(100%);
+  opacity: 0.7;
+}
+
+.heart-done {
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF9BB0 60%, #FFB4CC 100%);
+  box-shadow: 0 16rpx 40rpx rgba(255, 107, 157, 0.45), 0 0 32rpx rgba(255, 107, 157, 0.35);
+}
+
+.heart-icon {
+  font-size: 120rpx;
+  line-height: 1;
+}
+
+.heart-done .heart-icon {
+  animation: heartbeat 1.2s ease-in-out infinite;
+}
+
+.heart-tip {
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  color: #8A7F8A;
+  font-weight: 500;
+}
+
+/* 双方打卡状态行 */
+.status-row {
+  display: flex;
+  justify-content: center;
+  gap: 48rpx;
+  margin-bottom: 16rpx;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  background: #FFF5F8;
+  border-radius: 24rpx;
+  padding: 10rpx 28rpx;
+}
+
+.status-label {
+  font-size: 24rpx;
+  color: #8A7F8A;
+}
+
+.status-mark {
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.status-mark.ok {
+  color: #FF6B9D;
+}
+
+.status-mark.no {
+  color: #C9C4C6;
+}
+
+/* 双方一起打卡成功 */
+.both-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  background: linear-gradient(135deg, #FFE8F0 0%, #FFF0B3 100%);
+  border-radius: 24rpx;
+  padding: 12rpx 28rpx;
+  margin-bottom: 16rpx;
+  font-size: 26rpx;
+  animation: bounce-in 0.6s ease-out;
+}
+
+.bd-text {
+  font-weight: 700;
+  color: #C9489E;
+}
+
+.bd-badge {
+  font-size: 28rpx;
+}
+
+/* 连续打卡天数 */
+.streak-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8rpx;
+  margin: 8rpx 0 4rpx;
+}
+
+.streak-num {
+  font-size: 88rpx;
+  font-weight: 900;
+  background: linear-gradient(135deg, #FF6B9D 0%, #C9489E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+
+.streak-unit {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #FF6B9D;
+}
+
+.streak-label {
+  font-size: 26rpx;
+  color: #8A7F8A;
+  margin-left: 8rpx;
+}
+
+/* 今日寄语 */
+.today-note {
+  margin: 12rpx 24rpx 4rpx;
+  padding: 16rpx 24rpx;
+  background: rgba(168, 230, 207, 0.25);
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  color: #2D8B65;
+  text-align: left;
+}
+
+/* 打卡按钮 */
+.checkin-btn {
+  margin-top: 24rpx;
+  background: linear-gradient(135deg, #FF6B9D 0%, #FF8FB3 100%);
+  color: #FFFFFF;
+  border-radius: 48rpx;
+  padding: 22rpx 0;
+  font-size: 30rpx;
+  font-weight: 700;
+  box-shadow: 0 10rpx 24rpx rgba(255, 107, 157, 0.35);
+  transition: all 0.3s ease;
+}
+
+.checkin-btn.btn-done {
+  background: linear-gradient(135deg, #A8E6CF 0%, #C2EFD9 100%);
+  color: #2D8B65;
+  box-shadow: 0 10rpx 24rpx rgba(168, 230, 207, 0.35);
+}
+
+/* 最近 7 天打卡条 */
+.week-card {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 28rpx 16rpx;
+  display: flex;
+  justify-content: space-between;
+  box-shadow: 0 8rpx 28rpx rgba(255, 107, 157, 0.1);
+  margin-bottom: 24rpx;
+}
+
+.week-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.wc-day {
+  font-size: 22rpx;
+  color: #8A7F8A;
+  font-weight: 600;
+}
+
+.week-cell.today .wc-day {
+  color: #FF6B9D;
+  font-weight: 800;
+}
+
+.wc-dot {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F3EFF1;
+  border: 4rpx solid transparent;
+  transition: all 0.3s ease;
+}
+
+.week-cell.done .wc-dot {
+  background: linear-gradient(135deg, #FFB4CC 0%, #FF6B9D 100%);
+}
+
+.week-cell.both .wc-dot {
+  background: linear-gradient(135deg, #FF6B9D 0%, #C9489E 100%);
+  box-shadow: 0 6rpx 16rpx rgba(255, 107, 157, 0.35);
+}
+
+.week-cell.today .wc-dot {
+  border-color: #FFD93D;
+  box-shadow: 0 0 0 6rpx rgba(255, 217, 61, 0.3);
+}
+
+.wc-mark {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.wc-date {
+  font-size: 20rpx;
+  color: #B8A5A5;
+}
+
+/* 打卡历史列表 */
+.history-list {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 28rpx rgba(255, 107, 157, 0.08);
+  margin-bottom: 24rpx;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 28rpx;
+  border-bottom: 2rpx solid #FFF0F6;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.hi-emoji {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 24rpx;
+  background: #FFF5F8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.hi-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.hi-date {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.hi-date-text {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #4A4A4A;
+}
+
+.hi-tag {
+  font-size: 20rpx;
+  color: #FF6B9D;
+  background: rgba(255, 107, 157, 0.12);
+  padding: 2rpx 14rpx;
+  border-radius: 16rpx;
+  font-weight: 600;
+}
+
+.hi-people {
+  display: flex;
+  gap: 24rpx;
+  margin-top: 6rpx;
+}
+
+.hi-person {
+  font-size: 24rpx;
+}
+
+.hi-person.ok {
+  color: #FF6B9D;
+  font-weight: 700;
+}
+
+.hi-person.no {
+  color: #C9C4C6;
+}
+
+.hi-note {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #8A7F8A;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 420rpx;
+}
+
+/* 爱心跳动动画 */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.12); }
+  40% { transform: scale(0.96); }
+  55% { transform: scale(1.08); }
+  70% { transform: scale(1); }
+}

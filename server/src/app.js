@@ -21,6 +21,8 @@ app.use('/api/anniversaries', require('./routes/anniversary'))
 app.use('/api/period', require('./routes/period'))
 app.use('/api/moments', require('./routes/moment'))
 app.use('/api/upload', require('./routes/upload'))
+app.use('/api/checkin', require('./routes/checkin'))
+app.use('/api/quiz', require('./routes/quiz'))
 
 // 健康检查
 app.get('/api/health', (req, res) => {

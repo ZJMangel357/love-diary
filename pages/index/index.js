@@ -3,6 +3,9 @@ const util = require('../../utils/util.js')
 const api = require('../../utils/api.js')
 const app = getApp()
 
+// tab 页面路径（用 switchTab 跳转）
+const TAB_PAGES = ['/pages/index/index', '/pages/moments/moments', '/pages/anniversary/anniversary', '/pages/profile/profile']
+
 Page({
   data: {
     statusBarHeight: 20,
@@ -15,13 +18,16 @@ Page({
     nextAnniversary: null,    // 最近的纪念日（Hero 区倒计时展示）
     periodInfo: null,
     recentMoments: [],
+    checkin: null,            // 恋爱打卡状态
     singleMode: false,        // 单人体验模式
     weekDays: ['日', '一', '二', '三', '四', '五', '六'],
     quickActions: [
-      { id: 'menu', icon: '🍳', title: '今天吃什么', desc: '随机菜品推荐', color: 'pink', page: '/pages/menu/menu' },
-      { id: 'period', icon: '🌸', title: '经期助手', desc: '预测身体周期', color: 'purple', page: '/pages/period/period' },
-      { id: 'add-anniv', icon: '🎀', title: '添加纪念', desc: '记录重要日子', color: 'yellow', page: '/pages/anniversary-add/anniversary-add' },
-      { id: 'add-moment', icon: '📸', title: '记录时光', desc: '保存美好瞬间', color: 'mint', page: '/pages/moments-add/moments-add' }
+      { id: 'checkin', icon: '💖', title: '恋爱打卡', desc: '每天一起签到', color: 'pink', page: '/pages/checkin/checkin' },
+      { id: 'quiz', icon: '🧠', title: '心有灵犀', desc: '测测默契度', color: 'purple', page: '/pages/quiz/quiz' },
+      { id: 'menu', icon: '🍳', title: '今天吃什么', desc: '随机菜品推荐', color: 'yellow', page: '/pages/menu/menu' },
+      { id: 'period', icon: '🌸', title: '经期助手', desc: '预测身体周期', color: 'mint', page: '/pages/period/period' },
+      { id: 'add-anniv', icon: '🎀', title: '添加纪念', desc: '记录重要日子', color: 'orange', page: '/pages/anniversary-add/anniversary-add' },
+      { id: 'add-moment', icon: '📸', title: '记录时光', desc: '保存美好瞬间', color: 'blue', page: '/pages/moments-add/moments-add' }
     ]
   },
 
@@ -102,6 +108,7 @@ Page({
 
         // 并行加载各模块数据
         await Promise.all([
+          this.loadCheckin(),
           this.loadMenus(),
           this.loadAnniversaries(),
           this.loadMoments(),
@@ -123,6 +130,28 @@ Page({
         },
         singleMode: true
       })
+    }
+  },
+
+  // 加载恋爱打卡状态
+  async loadCheckin() {
+    try {
+      const res = await api.checkin.status()
+      if (res.code === 0 && res.data) {
+        const d = res.data
+        const t = d.today || {}
+        this.setData({
+          checkin: {
+            streak: d.streak || 0,
+            myDone: !!t.myDone,
+            partnerDone: !!t.partnerDone,
+            bothDone: !!(t.myDone && t.partnerDone),
+            note: t.note || ''
+          }
+        })
+      }
+    } catch (e) {
+      console.error('加载打卡状态失败', e)
     }
   },
 
@@ -219,6 +248,11 @@ Page({
     })
   },
 
+  // 跳转打卡页
+  goToCheckin() {
+    wx.navigateTo({ url: '/pages/checkin/checkin' })
+  },
+
   // 随机今日菜品
   async randomMenu() {
     try {
@@ -240,19 +274,12 @@ Page({
     }
   },
 
-  // 跳转功能页
+  // 跳转功能页（tab 页用 switchTab，普通页用 navigateTo）
   goToPage(e) {
     const { page } = e.currentTarget.dataset
     if (!page) return
-    if (page.startsWith('/pages/menu') || page.startsWith('/pages/anniversary') || 
-        page.startsWith('/pages/moments') || page.startsWith('/pages/period') ||
-        page.startsWith('/pages/profile')) {
-      wx.switchTab({
-        url: page,
-        fail: () => {
-          wx.navigateTo({ url: page })
-        }
-      })
+    if (TAB_PAGES.indexOf(page) >= 0) {
+      wx.switchTab({ url: page })
     } else {
       wx.navigateTo({ url: page })
     }
@@ -260,7 +287,7 @@ Page({
 
   // 去菜单详情
   goToMenuDetail() {
-    wx.switchTab({ url: '/pages/menu/menu' })
+    wx.navigateTo({ url: '/pages/menu/menu' })
   },
 
   // 去纪念日
